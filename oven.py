@@ -13,6 +13,7 @@ class Oven (threading.Thread):
 
     def __init__(self):
         threading.Thread.__init__(self)
+        self.daemon = True
         self.profile = None
         self.start_time = 0
         self.power = 0.0
@@ -67,6 +68,8 @@ class TempSensor(threading.Thread):
     
     def __init__(self,oven):
         threading.Thread.__init__(self)
+        self.daemon = True
+        
         self.temperature = 0
         self.oven = oven
         

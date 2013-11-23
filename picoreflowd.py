@@ -28,6 +28,8 @@ def notifyAll(message):
 class OvenWatcher(threading.Thread):
     def __init__(self,oven):
         threading.Thread.__init__(self)
+        self.daemon = True
+        
         self.oven = oven
 
     def run(self):
