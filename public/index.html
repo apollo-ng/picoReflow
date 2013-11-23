@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <title>PicoReflow</title>
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <script src="assets/js/jquery-1.10.2.min.js"></script>
+  <script src="assets/js/highcharts.js"></script>
+ <script src="assets/js/draggable-points.js"></script>
+ <script src="assets/js/bootstrap.min.js"></script>
+ <script src="assets/js/select2.min.js"></script>
+
+ <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+ <link rel="stylesheet" href="assets/css/bootstrap-theme.min.css">
+ <link rel="stylesheet" href="assets/css/select2.css"/>
+
+
+ <style>
+ body {
+  background: #b9b6af;
+ }
+
+
+.display {
+display: inline-block;
+text-align: right;
+padding-right: 10px;
+font-size: 24px;
+height: 35px;
+width: 90px;
+vertical-align: middle;
+color: #d8d3c5;
+font-weight: normal;
+-webkit-border-radius: 7px;
+-moz-border-radius: 7px;
+border-radius: 7px;
+background: #3F3E3A url(assets/images/panel_bg.png) repeat-x;
+-moz-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
+-webkit-box-shadow: 0 0 1.5em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
+box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
+border-color: #282828;
+background: #282828;
+}
+
+
+.navbar-default {
+
+margin-top: 15px;
+color: #d8d3c5;
+font-weight: normal;
+-webkit-border-radius: 7px;
+-moz-border-radius: 7px;
+border-radius: 7px;
+background: #3F3E3A url(assets/images/panel_bg.png) repeat;
+-moz-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
+-webkit-box-shadow: 0 0 1.5em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
+box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
+border-color: #282828;
+}
+
+.navbar-brand {
+    color: #d8d3c5;
+}
+.panel-default {
+-webkit-border-radius: 7px;
+-moz-border-radius: 7px;
+border-radius: 7px;
+-moz-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
+-webkit-box-shadow: 0 0 1.5em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
+box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
+
+}
+
+
+ .panel-heading {
+     background: #fafafa url('assets/images/page_bg.png') repeat-x;
+    overflow: hidden;
+    padding-top: 20px;
+}
+
+.btn-group {
+    position: relative;
+}
+
+.select2-container {
+    position: relative;
+    top: -3px;
+    width: 200px;
+}
+
+
+
+ </style>
+
+</head>
+<body>
+
+ <div class="container">
+
+  <!-- Static navbar -->
+  <div class="navbar navbar-default" role="navigation">
+
+<div class="pull-left" style="margin: 14px">
+<span class="display" id="act_temp" >25 C</span>
+<span class="display">76 C</span>
+</div>
+
+  <div class="btn-group pull-right" style="margin: 14px">
+<button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-forward"></span> Start</button>
+<button type="button" class="btn btn-danger" onclick="c.send('stop')"><span class="glyphicon glyphicon-stop"></span> Stop</button>
+</div>
+
+<div class="clearfix"></div>
+
+  <div class="progress progress-striped" style="margin: 14px; margin-top: 0">
+  <div id="progressBar" class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+    <span class="sr-only"></span>
+  </div>
+</div>
+
+  </div>
+  <!-- /Static navbar -->
+
+  <div class="panel panel-default">
+   <div class="panel-heading">
+
+    <select id="e2">
+     <option value="1">Standard Lead-Free</option>
+     <option value="2">Standard Leaded</option>
+     <option value="3">Another Test</option>
+    </select>
+
+    <div class="btn-group btn-group-sm pull-right">
+     <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
+     <button type="button" class="btn btn-default" ><span class="glyphicon glyphicon-pencil"></span></button>
+    </div>
+
+   </div>
+   <div class="panel-body" style='padding: 0'>
+    <div id="graph_container" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
+   </div>
+
+  </div>
+
+  <div id="drag"></div>
+  <div id="drop"></div>
+
+ </div> <!-- /container -->
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="c.send('start')">Start Job</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+ <script>
+
+function updateProgress(percentage){
+    if(percentage > 100) percentage = 100;
+    $('#progressBar').css('width', percentage+'%');
+    $('#progressBar').html(percentage+'%');
+}
+
+
+var s = new WebSocket("ws://10.1.1.110:8080/status");
+var c = new WebSocket("ws://10.1.1.110:8080/control");
+
+
+c.onmessage = function(e)
+{
+  console.log (e.data);
+}
+
+
+$("#e2").select2({
+  placeholder: "Temperature Curve",
+  allowClear: false
+});
+
+
+
+ Highcharts.theme = {
+   colors: ["#D8D3C5", "#75890c", "#c70000", "#55BF3B", "#DF5353", "#aaeeee", "#ff0066", "#eeaaee",
+      "#55BF3B", "#DF5353", "#7798BF", "#aaeeee"],
+   chart: {
+      backgroundColor: {
+         linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+         stops: [
+            [0, '#686764'],
+            [1, '#383734']
+         ]
+      },
+      borderWidth: 0,
+      borderRadius: 0,
+      plotBackgroundColor: null,
+      plotShadow: true,
+      plotBorderWidth: 0,
+      marginBottom: 50
+   },
+   title: {
+      style: {
+         color: '#FFF',
+         font: '16px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
+      }
+   },
+   subtitle: {
+      style: {
+         color: '#DDD',
+         font: '12px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
+      }
+   },
+   xAxis: {
+      gridLineWidth: 1,
+      gridLineColor: 'rgba(255, 255, 255, .1)',
+      lineColor: 'rgba(255, 255, 255, .1)',
+      tickColor: 'rgba(255, 255, 255, .1)',
+      labels: {
+         style: {
+            paddingTop: '4px',
+            color: '#D8D3C5',
+            font: '15px Arial, Helvetica, sans-serif'
+         }
+      },
+      title: {
+         style: {
+            color: '#FFF',
+            font: '12px Arial, Helvetica, sans-serif'
+         }
+      }
+   },
+   yAxis: {
+      alternateGridColor: null,
+      minorTickInterval: null,
+      gridLineColor: 'rgba(255, 255, 255, .1)',
+      minorGridLineColor: 'rgba(255,255,255,0.05)',
+      lineWidth: 0,
+      tickWidth: 0,
+      labels: {
+         style: {
+            color: '#D8D3C5',
+            font: '15px Arial, Helvetica, sans-serif'
+         }
+      },
+      title: {
+         style: {
+            color: '#FFF',
+            font: '12px Arial, Helvetica, sans-serif'
+         }
+      }
+   },
+   legend: {
+      enabled: false,
+      itemStyle: {
+         color: '#CCC'
+      },
+      itemHoverStyle: {
+         color: '#FFF'
+      },
+      itemHiddenStyle: {
+         color: '#333'
+      },
+      borderRadius: 0,
+      borderWidth: 0
+   },
+   labels: {
+      style: {
+         color: '#CCC'
+      }
+   },
+   tooltip: {
+      backgroundColor: {
+         linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+         stops: [
+            [0, 'rgba(96, 96, 96, .8)'],
+            [1, 'rgba(16, 16, 16, .8)']
+         ]
+      },
+      borderWidth: 0,
+      style: {
+         color: '#FFF'
+      }
+   },
+
+
+   plotOptions: {
+      series: {
+         shadow: true
+      },
+      line: {
+         dataLabels: {
+            color: '#CCC'
+         },
+         marker: {
+            lineColor: '#333'
+         }
+      },
+      spline: {
+         marker: {
+            lineColor: '#333'
+         }
+      }
+   },
+
+   toolbar: {
+      itemStyle: {
+         color: '#CCC'
+      }
+   },
+
+   navigation: {
+      buttonOptions: {
+         symbolStroke: '#DDDDDD',
+         hoverSymbolStroke: '#FFFFFF',
+         theme: {
+            fill: {
+               linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+               stops: [
+                  [0.4, '#606060'],
+                  [0.6, '#333333']
+               ]
+            },
+            stroke: '#000000'
+         }
+      }
+   },
+
+   // scroll charts
+   rangeSelector: {
+      buttonTheme: {
+         fill: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+               [0.4, '#888'],
+               [0.6, '#555']
+            ]
+         },
+         stroke: '#000000',
+         style: {
+            color: '#CCC',
+            fontWeight: 'bold'
+         },
+         states: {
+            hover: {
+               fill: {
+                  linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                  stops: [
+                     [0.4, '#BBB'],
+                     [0.6, '#888']
+                  ]
+               },
+               stroke: '#000000',
+               style: {
+                  color: 'white'
+               }
+            },
+            select: {
+               fill: {
+                  linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                  stops: [
+                     [0.1, '#000'],
+                     [0.3, '#333']
+                  ]
+               },
+               stroke: '#000000',
+               style: {
+                  color: 'yellow'
+               }
+            }
+         }
+      },
+      inputStyle: {
+         backgroundColor: '#333',
+         color: 'silver'
+      },
+      labelStyle: {
+         color: 'silver'
+      }
+   },
+
+   navigator: {
+      handles: {
+         backgroundColor: '#666',
+         borderColor: '#AAA'
+      },
+      outlineColor: '#CCC',
+      maskFill: 'rgba(16, 16, 16, 0.5)',
+      series: {
+         color: '#7798BF',
+         lineColor: '#A6C7ED'
+      }
+   },
+
+   scrollbar: {
+      barBackgroundColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+               [0.4, '#888'],
+               [0.6, '#555']
+            ]
+         },
+      barBorderColor: '#CCC',
+      buttonArrowColor: '#CCC',
+      buttonBackgroundColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+               [0.4, '#888'],
+               [0.6, '#555']
+            ]
+         },
+      buttonBorderColor: '#CCC',
+      rifleColor: '#FFF',
+      trackBackgroundColor: {
+         linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+         stops: [
+            [0, '#000'],
+            [1, '#333']
+         ]
+      },
+      trackBorderColor: '#666'
+   },
+
+   // special colors for some of the demo examples
+   legendBackgroundColor: 'rgba(48, 48, 48, 0.8)',
+   legendBackgroundColorSolid: 'rgb(70, 70, 70)',
+   dataLabelsColor: '#444',
+   textColor: '#E0E0E0',
+   maskColor: 'rgba(255,255,255,0.3)'
+};
+
+// Apply the theme
+var highchartsOptions = Highcharts.setOptions(Highcharts.theme);
+
+
+
+
+
+$(function() {
+  Highcharts.setOptions({
+      global: {
+          useUTC: false
+      }
+  });
+
+
+
+  var options =
+  {
+      title: { text: '' },
+      xAxis: {
+          title: { text: 'Time (s)' },
+          type: 'integer',
+          tickPixelInterval: 60
+      },
+      yAxis: {
+          title: { text: 'Temperature (\xB0C)' },
+          tickInterval: 25,
+          min: 0,
+          max: 300
+      },
+      tooltip: {
+            formatter: function() {
+                return Highcharts.numberFormat(this.y, 0);
+            }
+      },
+      chart: {
+          type: 'spline',
+          renderTo: 'graph_container',
+          animation: true,
+          zoomType: 'x',
+          marginTop: 30,
+          marginRight: 30,
+          events: {
+              load: function() {
+                  var series = this.series[1];
+
+
+                  s.onmessage = function(e)
+                  {
+                      x = JSON.parse(e.data);
+                      series.addPoint([x.runtime, x.temperature], true, false);
+
+                      perc = parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100);
+
+                      updateProgress(perc);
+                      console.log('Percent finished:' + perc);
+                      $('#act_temp').html(Highcharts.numberFormat(x.temperature, 0) + ' \xB0C');
+                      console.log (e.data);
+                  }
+
+                  /*
+                  var socket = io.connect('http://10.1.1.110:8080');
+                  socket.on('sample', function (sample) {
+                      // when a sample arrives we plot it
+                      series.addPoint([sample.x, sample.y], true, false);
+                      $('#act_temp').html(Highcharts.numberFormat(sample.y, 0) + ' \xB0C');
+
+
+                  });
+
+                  socket.on('error', function () {
+
+                   $(document).trigger("add-alerts", [
+                    {
+                      'message': "No communication to control server",
+                      'priority': 'error'
+                    }
+                  ]);
+
+
+                  })
+
+                  // Called when the connection to the server is opened.
+                  socket.onopen = function () {
+                    alert("Connection with server open.");
+                  };
+
+                  // Called when the connection to the server is closed.
+                  socket.onclose = function () {
+                    alert("Connection with server closed; Maybe the server wasn't found, it shut down or you're behind a firewall/proxy.");
+                  };
+*/
+              }
+          },
+          resetZoomButton: {
+             position: {
+                 align: 'right',
+                 verticalAlign: 'top'
+             }
+          }
+      },
+
+      plotOptions: {
+         series: {
+             cursor: 'resize',
+             point: {
+                 events: {
+                     drag: function (e) {
+                        $('#drag').html('Dragging <b>' + this.series.name + '</b>, <b>' + this.category + '</b> to <b>' + Highcharts.numberFormat(e.newY, 0) + '</b>');
+                     },
+                     drop: function () {
+                        $('#drop').html('In <b>' + this.series.name + '</b>, <b>' + this.category + '</b> was set to <b>' + Highcharts.numberFormat(this.y, 0) + '</b>');
+                     }
+                 }
+             },
+             stickyTracking: false
+         },
+
+      },
+
+      credits: {
+        enabled: false
+      },
+
+      series: [{
+        name: 'Ref',
+          data: [
+            [1, 25   ],
+            [70, 150 ],
+            [180, 183 ],
+            [210, 230 ],
+            [240, 183 ],
+            [300, 25 ]
+          ],
+          draggableX: true,
+          draggableY: true,
+          dragMinY: 0,
+          dragMaxY: 250
+        },
+        {
+          name: 'Act',
+          data: [
+            [0,0]
+          ],
+          marker: {
+            enabled: false
+          }
+        }]
+
+  };
+
+var graph = new Highcharts.Chart(options);
+
+});
+
+</script>
+</body>
+</html>
