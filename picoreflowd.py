@@ -73,7 +73,6 @@ def handle_control():
         try:
             message = wsock.receive()
             wsock.send("Your message was: %r" % message)
-            print message
             if message == "start":
                 log.info("Start command received")
                 oven.run_profile("abc")
