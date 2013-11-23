@@ -176,9 +176,10 @@ function updateProgress(percentage){
     $('#progressBar').html(percentage+'%');
 }
 
+var host = "ws://" + window.location.hostname + ":8080";
 
-var s = new WebSocket("ws://localhost:8080/status");
-var c = new WebSocket("ws://localhost:8080/control");
+var s = new WebSocket(host+"/status");
+var c = new WebSocket(host+"/control");
 
 
 c.onmessage = function(e)
