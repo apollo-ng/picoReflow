@@ -1,5 +1,5 @@
 import threading,time,random,datetime,logging
-from max31855 import MAX31855, MAX31855Error
+
 
 log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
 logging.basicConfig(level = logging.INFO, format = log_format)
@@ -58,25 +58,35 @@ class Oven (threading.Thread):
         return state
 
 class TempSensor(threading.Thread):
+    try:
+        from max31855 import MAX31855, MAX31855Error
+        dummy = False
+    except ImportError:
+        log.warning("Could not initialize temperature sensor, using dummy values!")
+        dummy = True
+    
     def __init__(self,oven):
         threading.Thread.__init__(self)
         self.temperature = 0
         self.oven = oven
-
-        cs_pin = 27
-        clock_pin = 22
-        data_pin = 17
-        units = "c"
-        self.thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
+        
+        if not TempSensor.dummy:
+            cs_pin = 27
+            clock_pin = 22
+            data_pin = 17
+            units = "c"
+            self.thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
 
 
     def run(self):
         while True:
-            time_delta = (20.0 - self.temperature)/40
-            power_delta = 8.0*self.oven.power
-
-            #self.temperature += (time_delta+power_delta)
-            self.temperature = self.thermocouple.get()
+            if not TempSensor.dummy:
+                self.temperature = self.thermocouple.get()
+            else:
+                time_delta = (20.0 - self.temperature)/40
+                power_delta = 8.0*self.oven.power
+                self.temperature += (time_delta+power_delta)
+            
             time.sleep(1)
 
 
