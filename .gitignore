@@ -1,1 +1,8 @@
 *.pyc
+*~
+\#*
+.#*
+*.swp
+.DStore/
+thumbs.db
+

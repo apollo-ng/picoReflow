@@ -177,8 +177,8 @@ function updateProgress(percentage){
 }
 
 
-var s = new WebSocket("ws://10.1.1.110:8080/status");
-var c = new WebSocket("ws://10.1.1.110:8080/control");
+var s = new WebSocket("ws://localhost:8080/status");
+var c = new WebSocket("ws://localhost:8080/control");
 
 
 c.onmessage = function(e)
