@@ -18,4 +18,4 @@ Gentoo:
 Raspbian:
 
 sudo apt-get install python-dev libevent-dev
-sudo pip install bottle gevent gevent-websocket
+sudo pip install greenlet bottle gevent gevent-websocket
