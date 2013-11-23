@@ -1,10 +1,14 @@
-import threading,time
-import json
-from oven import Oven
+import threading,time,logging,json
 
 import bottle
 from gevent.pywsgi import WSGIServer
 from geventwebsocket import WebSocketHandler, WebSocketError
+
+from oven import Oven
+
+log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
+logging.basicConfig(level = logging.DEBUG, format = log_format)
+log = logging.getLogger("picoreflowd")
 
 app = bottle.Bottle()
 oven = Oven()
@@ -14,13 +18,13 @@ wsocks_control = []
 
 def notifyAll(message):
     message_json = json.dumps(message)
-    print "sending to %d clients: %s"%(len(wsocks),message_json)
+    log.debug("sending to %d clients: %s"%(len(wsocks),message_json))
     for wsock in wsocks:
         if wsock:
             try:
                 wsock.send(message_json)
             except:
-                print "Could not write to socket!"
+                log.error("could not write to socket %s"%wsock)
                 wsocks.remove(wsock)
         else:
             wsocks.remove(wsock)
@@ -47,6 +51,7 @@ def index():
 
 @app.route('/picoreflow/:filename#.*#')
 def send_static(filename):
+    log.debug("serving %s"%filename)
     return bottle.static_file(filename, root='./public/')
 
 @app.route('/run')
@@ -70,9 +75,10 @@ def handle_control():
             wsock.send("Your message was: %r" % message)
             print message
             if message == "start":
-                print "START"
+                log.info("Start command received")
                 oven.run_profile("abc")
             elif message == "stop":
+                log.info("Stop command received")
                 oven.abort_run()
         except WebSocketError:
             break
@@ -96,7 +102,11 @@ def handle_websocket():
 
 
 def main():
-    server = WSGIServer(("0.0.0.0", 8080), app,
+    ip = "0.0.0.0"
+    port = 8080
+    log.info("Starting picoreflowd")
+    log.info("listening to %s:%d"%(ip,port))
+    server = WSGIServer((ip,port), app,
                     handler_class=WebSocketHandler)
     server.serve_forever()
 

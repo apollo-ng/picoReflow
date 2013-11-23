@@ -1,8 +1,5 @@
 import threading,time,random,datetime,logging
 
-
-log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
-logging.basicConfig(level = logging.INFO, format = log_format)
 log = logging.getLogger(__name__)
 
 class Oven (threading.Thread):
