@@ -39,6 +39,14 @@ class OvenWatcher(threading.Thread):
 ovenWatcher = OvenWatcher(oven)
 ovenWatcher.start()
 
+@app.route('/')
+def index():
+    return bottle.redirect('/picoreflow/index.html')
+
+@app.route('/picoreflow/:filename#.*#')
+def send_static(filename):
+    return bottle.static_file(filename, root='./public/')
+
 @app.route('/run')
 def start_oven():
     oven.run_profile("abc")
