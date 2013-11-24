@@ -10,7 +10,7 @@ except ImportError:
     sensor_dummy = True
 
 class Oven (threading.Thread):
-    STATE_IDLE      = "IDLE"
+    STATE_IDLE     = "IDLE"
     STATE_RUNNING  = "RUNNING"
     STATE_ABORT    = "ABORT"
     STATE_ERROR    = "ERROR"
@@ -21,6 +21,7 @@ class Oven (threading.Thread):
         self.profile = None
         self.start_time = 0
         self.runtime = 0
+        self.totaltime = 0
         self.power = 0.0
         self.state = Oven.STATE_IDLE
         self.temp_sensor = TempSensor(self)
@@ -29,6 +30,7 @@ class Oven (threading.Thread):
 
     def run_profile(self, profile):
         self.profile = profile
+        self.totaltime = 300.0
         self.state = Oven.STATE_RUNNING
         self.start_time = datetime.datetime.now()
         log.info("Starting")
@@ -40,12 +42,12 @@ class Oven (threading.Thread):
         while True:
             if self.state == Oven.STATE_RUNNING:
                 self.runtime = (datetime.datetime.now() - self.start_time).total_seconds()
-                log.info("running at %.1f deg C, power %.2f (%.1fs/%.0f)"%(self.temp_sensor.temperature,self.power,self.runtime,300.0))
+                log.info("running at %.1f deg C, power %.2f (%.1fs/%.0f)"%(self.temp_sensor.temperature,self.power,self.runtime,self.totaltime))
                 if self.temp_sensor.temperature < 250:
                     self.power = 1.0
                 else:
                     self.power = 0.0
-                if self.runtime > 300:
+                if self.runtime >= self.totaltime:
                     self.power = 0.0
                     self.state = Oven.STATE_IDLE
             elif self.state == Oven.STATE_ABORT:
@@ -61,7 +63,7 @@ class Oven (threading.Thread):
             'temperature': self.temp_sensor.temperature,
             'state': self.state,
             'power': self.power,
-            'totaltime': 300
+            'totaltime': self.totaltime
         }
         return state
 
