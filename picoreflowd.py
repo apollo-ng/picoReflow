@@ -1,4 +1,4 @@
-import threading,time,logging,json
+import os,threading,time,logging,json
 
 import bottle
 from gevent.pywsgi import WSGIServer
@@ -81,6 +81,26 @@ def handle_control():
         except WebSocketError:
             break
 
+@app.route('/storage')
+def handle_storage():
+    env = bottle.request.environ;
+    print env
+    wsock = env.get('wsgi.websocket')
+    if not wsock:
+        abort(400, 'Expected WebSocket request.')
+
+    while True:
+        try:
+            message = wsock.receive()
+            wsock.send("Your message was: %r" % message)
+            if message == "GET":
+                log.info("GET command recived")
+                return getProfiles()
+            elif message == "PUT":
+                log.info("PUT command received")
+        except WebSocketError:
+            break
+
 @app.route('/status')
 def handle_websocket():
     env = bottle.request.environ;
@@ -97,6 +117,21 @@ def handle_websocket():
         except WebSocketError:
             break
 
+def getProfiles():
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    path = os.path.join(script_dir,"storage","profiles")
+    print path
+    try :
+        profile_files = os.listdir(path)
+    except : 
+        profile_files = []
+    profiles = []
+    for filename in profile_files:
+        with open(os.path.join(path,filename), 'r') as f:
+            profiles.append(json.load(f))
+    print json.dumps(profiles)
+    return json.dumps(profiles)
+
 def main():
     log.info("Starting picoreflowd")
     ip = "0.0.0.0"
@@ -109,4 +144,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
