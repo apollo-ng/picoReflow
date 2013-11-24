@@ -36,6 +36,7 @@ def get_websocket_from_request():
     wsock = env.get('wsgi.websocket')
     if not wsock:
         abort(400, 'Expected WebSocket request.')
+    return wsock
 
 @app.route('/control')
 def handle_control():
