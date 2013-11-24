@@ -74,7 +74,6 @@ box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
  .panel-heading {
      background: #fafafa url('assets/images/page_bg.png') repeat-x;
     overflow: hidden;
-    padding-top: 20px;
 }
 
 .btn-group {
@@ -89,6 +88,23 @@ box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
 
 .progress-bar {
     background-color: #75890c;
+}
+
+.btn-success {
+    background-image: linear-gradient(to bottom,#5c6b09 100%,#75890c 100%);
+    background-color: #75890c;
+}
+
+.progress {
+    background: #000;
+}
+
+.modal-content {
+background-image: linear-gradient(to bottom,#f5f5f5 0,#e8e8e8 100%);
+}
+
+.modal-body {
+    background: #fafafa;
 }
 
  </style>
@@ -106,9 +122,9 @@ box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
 <span class="display">76 C</span>
 </div>
 
-  <div class="btn-group pull-right" style="margin: 14px">
-<button type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-forward"></span> Start</button>
-<button type="button" class="btn btn-danger" onclick="c.send('stop')"><span class="glyphicon glyphicon-stop"></span> Stop</button>
+  <div class="pull-right" style="margin: 14px">
+<button id="nav_start" type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-forward"></span> Start</button>
+<button id="nav_stop" type="button" class="btn btn-danger" onclick="c.send('stop')"><span class="glyphicon glyphicon-stop"></span> Stop</button>
 </div>
 
 <div class="clearfix"></div>
@@ -157,14 +173,20 @@ box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+        <h3 class="modal-title" id="myModalLabel">Task summary</h3>
       </div>
       <div class="modal-body">
-        ...
+
+      <table class="table table-bordered">
+       <tr><td>Selected Curve</td><td><b>Lead Free</b></td></tr>
+       <tr><td>Estimated Runtime</td><td><b>5 Minutes</b></td></tr>
+       <tr><td>Estimated Power consumption</td><td><b>0.320 kW/h (EUR 0.08)</b></td></tr>
+      </table>
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" onclick="c.send('start')">Start Job</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="c.send('start')">Start Job</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
@@ -174,16 +196,24 @@ box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
  <script>
 
 function updateProgress(percentage){
+    if(state=="RUNNING") {
     if(percentage > 100) percentage = 100;
     $('#progressBar').css('width', percentage+'%');
-    $('#progressBar').html(percentage+'%');
+    if(percentage>=5) $('#progressBar').html(percentage+'%');
+} else {
+    $('#progressBar').css('width', 0+'%');
+    $('#progressBar').html('');
+}
 }
 
 var host = "ws://" + window.location.hostname + ":8080";
 
 var s = new WebSocket(host+"/status");
 var c = new WebSocket(host+"/control");
+var st = new WebSocket(host+"/storage");
 
+var state = "IDLE";
+var graph;
 
 c.onmessage = function(e)
 {
@@ -496,14 +526,25 @@ $(function() {
                   s.onmessage = function(e)
                   {
                       x = JSON.parse(e.data);
-                      series.addPoint([x.runtime, x.temperature], true, false);
+                      state = x.state;
 
-                      perc = parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100);
-
-                      updateProgress(perc);
-                      console.log('Percent finished:' + perc);
+                      updateProgress(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100));
                       $('#act_temp').html(Highcharts.numberFormat(x.temperature, 0) + ' \xB0C');
-                      console.log (e.data);
+                      //console.log (e.data);
+                      //console.log('Percent finished:' + perc);
+
+                      if(state=="RUNNING")
+                      {
+                          $("#nav_start").hide();
+                          $("#nav_stop").show();
+                        series.addPoint([x.runtime, x.temperature], true, false);
+                      }
+                      else
+                      {
+                          $("#nav_start").show();
+                          $("#nav_stop").hide();
+                    }
+
                   }
 
                   /*
@@ -597,7 +638,7 @@ $(function() {
 
   };
 
-var graph = new Highcharts.Chart(options);
+graph = new Highcharts.Chart(options);
 
 });
 
