@@ -9,7 +9,7 @@ logging.basicConfig(level = logging.INFO, format = log_format)
 log = logging.getLogger("picoreflowd")
 log.info("Starting picoreflowd")
 
-from oven import Oven
+from oven import Oven, Profile
 from ovenWatcher import OvenWatcher
 
 app = bottle.Bottle()
@@ -40,10 +40,16 @@ def handle_control():
         try:
             message = wsock.receive()
             wsock.send("Your message was: %r" % message)
-            if message == "start":
-                log.info("Start command received")
-                oven.run_profile("abc")
-            elif message == "stop":
+            log.info("Received (control): %s"% message)
+            msgdict = json.loads(message)
+            if msgdict.get("cmd") == "RUN":
+                log.info("RUN command received")
+                profile_obj = msgdict.get('profile')
+                if profile_obj:
+                    profile_json = json.dumps(profile_obj)
+                    profile = Profile(profile_json)
+                oven.run_profile(profile)
+            elif msgdict.get("cmd") == "STOP":
                 log.info("Stop command received")
                 oven.abort_run()
         except WebSocketError:
