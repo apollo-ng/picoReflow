@@ -32,7 +32,7 @@ class Oven (threading.Thread):
     def run_profile(self, profile):
         log.info("Running profile %s"%profile.name)
         self.profile = profile
-        self.totaltime = 300.0
+        self.totaltime = profile.get_duration()
         self.state = Oven.STATE_RUNNING
         self.start_time = datetime.datetime.now()
         log.info("Starting")
@@ -53,9 +53,11 @@ class Oven (threading.Thread):
                     self.power = 0.0
                 if self.runtime >= self.totaltime:
                     self.power = 0.0
+                    self.runtime = 0
                     self.state = Oven.STATE_IDLE
             elif self.state == Oven.STATE_ABORT:
                 self.power = 0.0
+                self.runtime = 0
                 self.state = Oven.STATE_IDLE
             time.sleep(1)
 
