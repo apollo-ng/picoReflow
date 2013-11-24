@@ -5,7 +5,7 @@ from gevent.pywsgi import WSGIServer
 from geventwebsocket import WebSocketHandler, WebSocketError
 
 log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
-logging.basicConfig(level = logging.DEBUG, format = log_format)
+logging.basicConfig(level = logging.INFO, format = log_format)
 log = logging.getLogger("picoreflowd")
 log.info("Starting picoreflowd")
 
@@ -35,6 +35,7 @@ def get_websocket_from_request():
 @app.route('/control')
 def handle_control():
     wsock = get_websocket_from_request()
+    log.info("websocket (control) opened")
     while True:
         try:
             message = wsock.receive()
@@ -47,14 +48,17 @@ def handle_control():
                 oven.abort_run()
         except WebSocketError:
             break
+    log.info("websocket (control) closed")
 
 @app.route('/storage')
 def handle_storage():
     wsock = get_websocket_from_request()
-
+    log.info("websocket (storage) opened")
     while True:
         try:
             message = wsock.receive()
+            if not message:
+                break
             if message == "GET":
                 log.info("GET command recived")
                 wsock.send(get_profiles())
@@ -62,17 +66,20 @@ def handle_storage():
                 log.info("PUT command received")
         except WebSocketError:
             break
+    log.info("websocket (storage) closed")
 
 @app.route('/status')
 def handle_status():
     wsock = get_websocket_from_request()
     ovenWatcher.addObserver(wsock)
+    log.info("websocket (status) opened")
     while True:
         try:
             message = wsock.receive()
             wsock.send("Your message was: %r" % message)
         except WebSocketError:
             break
+    log.info("websocket (status) closed")
 
 def get_profiles():
     script_dir = os.path.dirname(os.path.realpath(__file__))
