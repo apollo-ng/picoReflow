@@ -48,18 +48,25 @@
   <div class="panel panel-default">
    <div class="panel-heading">
 
-    <select id="e2" style="margin-top: 5px">
-    </select>
+    <select id="e2" style="margin-top: 5px"></select>
+
+    <div id="saveas" class="input-group" style="display:none">
+      <input id="form_profile_name" type="text" class="form-control" />
+      <span class="input-group-btn">
+        <button class="btn btn-success" type="button" onclick="saveProfile();">Save</button>
+      </span>
+    </div><!-- /input-group -->
 
     <div class="btn-group btn-group-sm pull-right">
-     <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>
-     <button type="button" class="btn btn-default" ><span class="glyphicon glyphicon-pencil"></span></button>
+     <!--<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>-->
+     <button type="button" class="btn btn-default" onclick="enterEditMode()"><span class="glyphicon glyphicon-pencil"></span></button>
     </div>
 
    </div>
    <div class="panel-body" style='padding: 0'>
     <div id="graph_container" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
    </div>
+
 
   </div>
 
@@ -128,6 +135,37 @@ function abortTask() {
       console.log(JSON.stringify(test));
       ws_control.send(JSON.stringify(test));
 }
+
+
+function enterEditMode() {
+    //$('#e2').hide();
+    $('#saveas').show();
+    $('#e2').select2('container').hide();
+    $('#form_profile_name').attr('value', profiles[selected_profile].name);
+}
+
+
+function saveProfile() {
+    name = $('#form_profile_name').attr('value')
+    console.log('Trying to save profile: ' + name);
+    var rawdata = graph.series[0].data;
+    var data = [];
+
+    for(var i=0; i<rawdata.length;i++)
+    {
+        data.push([rawdata[i].x, rawdata[i].y]);
+    }
+
+    var profile = { "type": "profile", "data": data, "name": name }
+    var put = { "cmd": "PUT", "profile": profile }
+
+    var put_cmd = JSON.stringify(put);
+
+    ws_storage.send(put_cmd);
+
+    console.log('came to this: ' + put_cmd);
+}
+
 
 
 var state = "IDLE";
@@ -518,7 +556,7 @@ $(function() {
             }
       },
       chart: {
-          type: 'spline',
+          type: 'line',
           renderTo: 'graph_container',
           animation: true,
           zoomType: 'x',
