@@ -1,121 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
  <title>PicoReflow</title>
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <script src="assets/js/jquery-1.10.2.min.js"></script>
-  <script src="assets/js/highcharts.js"></script>
+ <script src="assets/js/highcharts.js"></script>
  <script src="assets/js/draggable-points.js"></script>
  <script src="assets/js/bootstrap.min.js"></script>
  <script src="assets/js/select2.min.js"></script>
 
- <link rel="stylesheet" href="assets/css/bootstrap.min.css">
- <link rel="stylesheet" href="assets/css/bootstrap-theme.min.css">
+ <link rel="stylesheet" href="assets/css/bootstrap.min.css"/>
+ <link rel="stylesheet" href="assets/css/bootstrap-theme.min.css"/>
  <link rel="stylesheet" href="assets/css/select2.css"/>
-
-
- <style>
- body {
-  background: #b9b6af;
- }
-
-
-.display {
-display: inline-block;
-text-align: right;
-padding-right: 10px;
-font-size: 24px;
-height: 35px;
-width: 90px;
-vertical-align: middle;
-color: #d8d3c5;
-font-weight: normal;
--webkit-border-radius: 7px;
--moz-border-radius: 7px;
-border-radius: 7px;
-background: #3F3E3A url(assets/images/panel_bg.png) repeat-x;
--moz-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
--webkit-box-shadow: 0 0 1.5em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
-border-color: #282828;
-background: #282828;
-}
-
-
-.navbar-default {
-
-margin-top: 15px;
-color: #d8d3c5;
-font-weight: normal;
--webkit-border-radius: 7px;
--moz-border-radius: 7px;
-border-radius: 7px;
-background: #3F3E3A url(assets/images/panel_bg.png) repeat;
--moz-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
--webkit-box-shadow: 0 0 1.5em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
-border-color: #282828;
-}
-
-.navbar-brand {
-    color: #d8d3c5;
-}
-.panel-default {
--webkit-border-radius: 7px;
--moz-border-radius: 7px;
-border-radius: 7px;
--moz-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
--webkit-box-shadow: 0 0 1.5em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
-
-}
-
-
- .panel-heading {
-     background: #fafafa url('assets/images/page_bg.png') repeat-x;
-    overflow: hidden;
-}
-
-.btn-group {
-    position: relative;
-}
-
-.select2-container {
-    position: relative;
-    top: -3px;
-    width: 200px;
-}
-
-.progress-bar {
-    background-color: #75890c;
-}
-
-.btn-success {
-    background-image: linear-gradient(to bottom,#5c6b09 100%,#75890c 100%);
-    background-color: #75890c;
-}
-
-.progress {
-    background: #000;
-}
-
-.modal-content {
-background-image: linear-gradient(to bottom,#f5f5f5 0,#e8e8e8 100%);
-}
-
-.modal-body {
-    background: #fafafa;
-}
-
-.modal-footer {
-    margin-top: 0;
-}
-
-.modal-body .table {
-    margin-bottom: 0;
-}
-
- </style>
+ <link rel="stylesheet" href="assets/css/picoreflow.css"/>
 
 </head>
 <body>
@@ -124,28 +22,25 @@ background-image: linear-gradient(to bottom,#f5f5f5 0,#e8e8e8 100%);
 
   <!-- Static navbar -->
   <div class="navbar navbar-default" role="navigation">
+   <div class="pull-left" style="margin: 14px">
+    <span id="act_temp" class="display">- °C</span>
+    <span class="display">- °C</span>
+    <span id="state" class="display">Idle</span>
+    <span class="display">-</span>
+   </div>
 
-<div class="pull-left" style="margin: 14px">
-  <span id="act_temp" class="col-md-1">- °C</span>
-  <span class="col-md-1">- °C</span>
-  <span id="state" class="col-md-1">Idle</span>
-  <span class="col-md-1">-</span>
-</div>
+   <div class="pull-right" style="margin: 14px">
+    <button id="nav_start" type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-forward"></span> Start</button>
+    <button id="nav_stop" type="button" class="btn btn-danger" onclick="abortTask()"><span class="glyphicon glyphicon-stop"></span> Stop</button>
+   </div>
 
+   <div class="clearfix"></div>
 
-  <div class="pull-right" style="margin: 14px">
-<button id="nav_start" type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-forward"></span> Start</button>
-<button id="nav_stop" type="button" class="btn btn-danger" onclick="abortTask()"><span class="glyphicon glyphicon-stop"></span> Stop</button>
-</div>
-
-<div class="clearfix"></div>
-
-<div class="progress progress-striped active" style="margin: 14px; margin-top: 0">
-  <div id="progressBar" class="progress-bar"  role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
-    <span class="sr-only"></span>
-  </div>
-</div>
-
+   <div class="progress progress-striped active" style="margin: 14px; margin-top: 0">
+    <div id="progressBar" class="progress-bar"  role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+     <span class="sr-only"></span>
+    </div>
+   </div>
 
   </div>
   <!-- /Static navbar -->
