@@ -1,10 +1,11 @@
-import os,threading,time,logging,json
+import os,logging,json
 
 import bottle
 from gevent.pywsgi import WSGIServer
 from geventwebsocket import WebSocketHandler, WebSocketError
 
 from oven import Oven
+from ovenWatcher import OvenWatcher
 
 log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
 logging.basicConfig(level = logging.DEBUG, format = log_format)
@@ -12,37 +13,8 @@ log = logging.getLogger("picoreflowd")
 
 app = bottle.Bottle()
 oven = Oven()
-wsocks_control = []
-
-class OvenWatcher(threading.Thread):
-    def __init__(self,oven):
-        self.watchers = []
-        threading.Thread.__init__(self)
-        self.daemon = True
-        
-        self.oven = oven
-        self.start()
-
-    def run(self):
-        while True:
-            oven_state = self.oven.get_state()
-            self.notifyAll(oven_state)
-            time.sleep(1)
-    
-    def notifyAll(self,message):
-        message_json = json.dumps(message)
-        log.debug("sending to %d clients: %s"%(len(self.watchers),message_json))
-        for wsock in self.watchers:
-            if wsock:
-                try:
-                    wsock.send(message_json)
-                except:
-                    log.error("could not write to socket %s"%wsock)
-                    wsocks.remove(wsock)
-            else:
-                wsocks.remove(wsock)
-
 ovenWatcher = OvenWatcher(oven)
+wsocks_control = []
 
 @app.route('/')
 def index():
@@ -109,7 +81,7 @@ def handle_websocket():
     if not wsock:
         abort(400, 'Expected WebSocket request.')
 
-    ovenWatcher.watchers.append(wsock)
+    ovenWatcher.addObserver(wsock)
     while True:
         try:
             message = wsock.receive()
