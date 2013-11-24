@@ -17,7 +17,7 @@ class OvenWatcher(threading.Thread):
             self.notifyAll(oven_state)
             time.sleep(1)
     
-    def addObserver(observer):
+    def addObserver(self,observer):
         self.observers.append(observer)
     
     def notifyAll(self,message):
