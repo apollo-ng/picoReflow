@@ -107,6 +107,14 @@ background-image: linear-gradient(to bottom,#f5f5f5 0,#e8e8e8 100%);
     background: #fafafa;
 }
 
+.modal-footer {
+    margin-top: 0;
+}
+
+.modal-body .table {
+    margin-bottom: 0;
+}
+
  </style>
 
 </head>
@@ -173,20 +181,20 @@ background-image: linear-gradient(to bottom,#f5f5f5 0,#e8e8e8 100%);
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h3 class="modal-title" id="myModalLabel">Task summary</h3>
+        <h3 class="modal-title" id="myModalLabel">Task Overview</h3>
       </div>
       <div class="modal-body">
 
       <table class="table table-bordered">
-       <tr><td>Selected Curve</td><td><b>Lead Free</b></td></tr>
+       <tr><td>Selected Profile</td><td><b><span id="sel_prof"></span></b></td></tr>
        <tr><td>Estimated Runtime</td><td><b>5 Minutes</b></td></tr>
-       <tr><td>Estimated Power consumption</td><td><b>0.320 kW/h (EUR 0.08)</b></td></tr>
+       <tr><td>Estimated Power consumption</td><td><b>0.320 kWh (EUR 0.08)</b></td></tr>
       </table>
 
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="ws_control.send('start')">Start Job</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="runTask()">Start Job</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
@@ -208,9 +216,19 @@ function updateProgress(percentage){
 }
 
 
+function runTask() {
+      var test = {
+          "cmd": "RUN",
+          "profile": profile[selected_profile]
+      }
+     ws_control.send(JSON.stringify(test));
+}
+
+
 var state = "IDLE";
 var graph;
 var profiles = [];
+var selected_profile = 0;
 
 
 var host = "ws://" + window.location.hostname + ":8080";
@@ -257,27 +275,33 @@ ws_storage.onopen = function()
 
        console.log("Parsed profile:" + profiles);
 
+        //delete old options in select
         $('#e2')
         .find('option')
         .remove()
         .end();
 
-
+        // fill select with new options from websocket
         for (var i=0; i<profiles.length; i++)
         {
                 var profile = profiles[i];
                 console.log(profile.name);
-
                 $('#e2').append('<option value="'+i+'">'+profile.name+'</option>');
-
         }
 
-
+  $('#e2').select2('val', '0');
+    update_profile(0);
     }
+
+
 
     console.log('Requesting stored profiles');
 
     ws_storage.send('GET');
+
+
+
+
 }
 
 
@@ -291,12 +315,18 @@ $("#e2").select2({
 });
 
 
-
 $("#e2").on("change", function(e) {
-  console.log('Profile selected:' + e);
+  update_profile(e.val);
 });
 
 
+function update_profile(id) {
+  console.log('Profile selected:' + profiles[id].name);
+  selected_profile = id;
+  $('#sel_prof').html(profiles[id].name);
+  console.log(graph.series);
+  graph.series[0].setData(profiles[id].data);
+}
 
 
  Highcharts.theme = {
