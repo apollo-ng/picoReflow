@@ -219,8 +219,11 @@ function updateProgress(percentage){
 function runTask() {
       var test = {
           "cmd": "RUN",
-          "profile": profile[selected_profile]
+          "profile": profiles[selected_profile]
       }
+
+      console.log(JSON.stringify(test));
+
      ws_control.send(JSON.stringify(test));
 }
 
