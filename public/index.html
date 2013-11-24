@@ -127,7 +127,7 @@ background-image: linear-gradient(to bottom,#f5f5f5 0,#e8e8e8 100%);
 
   <div class="pull-right" style="margin: 14px">
 <button id="nav_start" type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-forward"></span> Start</button>
-<button id="nav_stop" type="button" class="btn btn-danger" onclick="c.send('stop')"><span class="glyphicon glyphicon-stop"></span> Stop</button>
+<button id="nav_stop" type="button" class="btn btn-danger" onclick="ws_control.send('stop')"><span class="glyphicon glyphicon-stop"></span> Stop</button>
 </div>
 
 <div class="clearfix"></div>
@@ -146,9 +146,6 @@ background-image: linear-gradient(to bottom,#f5f5f5 0,#e8e8e8 100%);
    <div class="panel-heading">
 
     <select id="e2">
-     <option value="1">Standard Lead-Free</option>
-     <option value="2">Standard Leaded</option>
-     <option value="3">Another Test</option>
     </select>
 
     <div class="btn-group btn-group-sm pull-right">
@@ -189,7 +186,7 @@ background-image: linear-gradient(to bottom,#f5f5f5 0,#e8e8e8 100%);
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="c.send('start')">Start Job</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="ws_control.send('start')">Start Job</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
@@ -197,6 +194,7 @@ background-image: linear-gradient(to bottom,#f5f5f5 0,#e8e8e8 100%);
 
 
  <script>
+
 
 function updateProgress(percentage){
     if(state=="RUNNING") {
@@ -209,20 +207,16 @@ function updateProgress(percentage){
 }
 }
 
-var host = "ws://" + window.location.hostname + ":8080";
-
-
-var c = new WebSocket(host+"/control");
-
-c.onmessage = function(e)
-{
-  console.log (e.data);
-}
 
 var state = "IDLE";
 var graph;
+var profiles = [];
 
-// Status Socket
+
+var host = "ws://" + window.location.hostname + ":8080";
+
+
+// Status Socket ////////////////////////////////
 
 var ws_status = new WebSocket(host+"/status");
 
@@ -231,7 +225,23 @@ ws_status.onopen = function()
     console.log("Status Socket has been opened");
 }
 
-// Storage Socket
+
+// Control Socket ////////////////////////////////
+
+var ws_control = new WebSocket(host+"/control");
+
+ws_control.onopen = function()
+{
+    ws_control.onmessage = function(e)
+    {
+        console.log (e.data);
+    }
+
+    console.log("Control Socket has been opened");
+}
+
+
+// Storage Socket ///////////////////////////////
 
 var ws_storage = new WebSocket(host+"/storage");
 
@@ -242,6 +252,27 @@ ws_storage.onopen = function()
     ws_storage.onmessage = function(e)
     {
        console.log('Storage MSG:' + e.data);
+
+       profiles = JSON.parse(e.data);
+
+       console.log("Parsed profile:" + profiles);
+
+        $('#e2')
+        .find('option')
+        .remove()
+        .end();
+
+
+        for (var i=0; i<profiles.length; i++)
+        {
+                var profile = profiles[i];
+                console.log(profile.name);
+
+                $('#e2').append('<option value="'+i+'">'+profile.name+'</option>');
+
+        }
+
+
     }
 
     console.log('Requesting stored profiles');
@@ -258,6 +289,13 @@ $("#e2").select2({
   placeholder: "Temperature Curve",
   allowClear: false
 });
+
+
+
+$("#e2").on("change", function(e) {
+  console.log('Profile selected:' + e);
+});
+
 
 
 
@@ -672,7 +710,6 @@ $(function() {
   };
 
 graph = new Highcharts.Chart(options);
-
 
 
 });
