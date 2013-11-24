@@ -46,34 +46,31 @@
 
     <select id="e2" style="margin-top: 5px"></select>
 
-    <div id="saveas" class="input-group" style="display:none">
+    <div id="saveas" class="input-group" style="display:none;">
+      <span class="input-group-addon">Profile Name</span>
       <input id="form_profile_name" type="text" class="form-control" />
       <span class="input-group-btn">
         <button class="btn btn-success" type="button" onclick="saveProfile();">Save</button>
+        <button id="btn_exit" type="button" class="btn btn-danger" onclick="leaveEditMode()" style="display:none"><span class="glyphicon glyphicon-remove"></span></button>
       </span>
     </div><!-- /input-group -->
 
     <div class="btn-group btn-group-sm">
      <!--<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>-->
-     <button type="button" class="btn btn-default" onclick="enterEditMode()"><span class="glyphicon glyphicon-pencil"></span></button>
+     <button id="btn_edit" type="button" class="btn btn-default" onclick="enterEditMode()"><span class="glyphicon glyphicon-pencil"></span></button>
     </div>
 
-   <div class="pull-right">
-    <button id="nav_start" type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-forward"></span> Start</button>
-    <button id="nav_stop" type="button" class="btn btn-danger" onclick="abortTask()"><span class="glyphicon glyphicon-stop"></span> Stop</button>
+   <div class="pull-right" style="margin-top: 3px">
+    <button id="nav_start" type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" style="display:none"><span class="glyphicon glyphicon-play"></span> Start</button>
+    <button id="nav_stop" type="button" class="btn btn-danger" onclick="abortTask()" style="display:none" ><span class="glyphicon glyphicon-stop"></span> Stop</button>
    </div>
 
    </div>
    <div class="panel-body" style='padding: 0'>
-    <div id="graph_container" style="min-width: 400px; height: 400px; margin: 0 auto"></div>
+    <div id="graph_container" style="height: 400px; margin: 0 auto"></div>
    </div>
 
-
   </div>
-
-  <div id="drag"></div>
-  <div id="drop"></div>
-
  </div> <!-- /container -->
 
 
@@ -141,9 +138,13 @@ function abortTask() {
 
 function enterEditMode() {
     //$('#e2').hide();
+    state="EDIT"
     $('#saveas').show();
     $('#e2').select2('container').hide();
-    $('#main_nav').hide();
+    $('#main_nav').slideUp();
+    $('#nav_start').hide();
+    $('#btn_edit').hide();
+    $('#btn_exit').show();
     $('#form_profile_name').attr('value', profiles[selected_profile].name);
     graph.series[0].options.marker.enabled=true;
     graph.series[0].options.draggableX=true;
@@ -151,6 +152,20 @@ function enterEditMode() {
     graph.render();
 }
 
+function leaveEditMode() {
+    state="IDLE";
+    $('#saveas').hide();
+    $('#e2').select2('container').show();
+    $('#main_nav').slideDown();
+    $('#nav_start').show();
+    $('#btn_edit').show();
+    $('#btn_exit').hide();
+    graph.series[0].options.marker.enabled=false;
+    graph.series[0].options.draggableX=false;
+    graph.series[0].options.draggableY=false;
+    ws_storage.send('GET');
+    graph.render();
+}
 
 function saveProfile() {
     name = $('#form_profile_name').val();
@@ -171,6 +186,10 @@ function saveProfile() {
     ws_storage.send(put_cmd);
 
     console.log('came to this: ' + put_cmd);
+
+    selected_profile_name = name;
+
+    leaveEditMode();
 }
 
 
@@ -179,6 +198,7 @@ var state = "IDLE";
 var graph;
 var profiles = [];
 var selected_profile = 0;
+var selected_profile_name = "leadfree";
 
 
 var host = "ws://" + window.location.hostname + ":8080";
@@ -237,21 +257,21 @@ ws_storage.onopen = function()
                 var profile = profiles[i];
                 console.log(profile.name);
                 $('#e2').append('<option value="'+i+'">'+profile.name+'</option>');
+
+                if (profile.name == selected_profile_name)
+                {
+                    console.log('Matchiemazvhie');
+                    selected_profile = i;
+                    $('#e2').select2('val', i);
+                    update_profile(i);
+                }
+
         }
 
-  $('#e2').select2('val', '0');
-    update_profile(0);
     }
 
-
-
     console.log('Requesting stored profiles');
-
     ws_storage.send('GET');
-
-
-
-
 }
 
 
@@ -577,7 +597,12 @@ $(function() {
                   ws_status.onmessage = function(e)
                   {
                       x = JSON.parse(e.data);
+
+                      if(state!="EDIT")
+                      {
                       state = x.state;
+                      }
+
                       $('#state').html(state);
 
                       updateProgress(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100));
@@ -597,6 +622,9 @@ $(function() {
                       //console.log (e.data);
                       //console.log('Percent finished:' + perc);
 
+                      if(state!="EDIT")
+                      {
+
                       if(state=="RUNNING")
                       {
                           $("#nav_start").hide();
@@ -615,7 +643,8 @@ $(function() {
                       {
                           $("#nav_start").show();
                           $("#nav_stop").hide();
-                    }
+                      }
+                  }
 
                   }
 
@@ -666,12 +695,13 @@ $(function() {
              cursor: 'resize',
              point: {
                  events: {
+                     /*
                      drag: function (e) {
                         $('#drag').html('Dragging <b>' + this.series.name + '</b>, <b>' + this.category + '</b> to <b>' + Highcharts.numberFormat(e.newY, 0) + '</b>');
                      },
                      drop: function () {
                         $('#drop').html('In <b>' + this.series.name + '</b>, <b>' + this.category + '</b> was set to <b>' + Highcharts.numberFormat(this.y, 0) + '</b>');
-                     }
+                     }*/
                  }
              },
              stickyTracking: false
