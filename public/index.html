@@ -25,14 +25,9 @@
    <div class="pull-left" style="margin: 14px">
     <span id="act_temp" class="display" style="color: #75890c">25 &deg;C</span>
     <span id="target_temp" class="display">OFF</span>
-    <span id="state" class="display" style="font-size: 14px">Idle</span>
+    <span id="state" class="display" style="font-size: 14px; text-align: center; padding-right:0">Idle</span>
     <span id="eta" class="display" style="width: 60px">-</span>
     <span id="power" class="display" style="width: 35px;">&nbsp;</span>
-   </div>
-
-   <div class="pull-right" style="margin: 14px">
-    <button id="nav_start" type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-forward"></span> Start</button>
-    <button id="nav_stop" type="button" class="btn btn-danger" onclick="abortTask()"><span class="glyphicon glyphicon-stop"></span> Stop</button>
    </div>
 
    <div class="clearfix"></div>
@@ -58,10 +53,15 @@
       </span>
     </div><!-- /input-group -->
 
-    <div class="btn-group btn-group-sm pull-right">
+    <div class="btn-group btn-group-sm">
      <!--<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>-->
      <button type="button" class="btn btn-default" onclick="enterEditMode()"><span class="glyphicon glyphicon-pencil"></span></button>
     </div>
+
+   <div class="pull-right">
+    <button id="nav_start" type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-forward"></span> Start</button>
+    <button id="nav_stop" type="button" class="btn btn-danger" onclick="abortTask()"><span class="glyphicon glyphicon-stop"></span> Stop</button>
+   </div>
 
    </div>
    <div class="panel-body" style='padding: 0'>
@@ -583,6 +583,9 @@ $(function() {
                       updateProgress(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100));
 
                       $('#act_temp').html(Highcharts.numberFormat(x.temperature, 0) + ' \xB0C');
+                      $('#power').css("background-color", (x.power > 0.5 ? "#75890c" : "#1F1E1A") );
+
+
                       if (x.target == 0)
                       {
                           $('#target_temp').html('OFF');
@@ -605,7 +608,7 @@ $(function() {
                         var seconds = left - minutes * 60;
                         $('#eta').html(minutes+':'+ (seconds < 10 ? "0" : "") + seconds);
 
-                        $('#power').css("background-color", (x.power > 0.5 ? "#75890c" : "#1F1E1A") );
+
 
                       }
                       else
