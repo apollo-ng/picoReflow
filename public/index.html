@@ -126,16 +126,16 @@ background-image: linear-gradient(to bottom,#f5f5f5 0,#e8e8e8 100%);
   <div class="navbar navbar-default" role="navigation">
 
 <div class="pull-left" style="margin: 14px">
-  <div id="act_temp" class="col-md-1">- °C</div>
-  <div class="col-md-1">- °C</div>
-  <div class="col-md-1">Idle</div>
-  <div class="col-md-1">-</div>
+  <span id="act_temp" class="col-md-1">- °C</span>
+  <span class="col-md-1">- °C</span>
+  <span id="state" class="col-md-1">Idle</span>
+  <span class="col-md-1">-</span>
 </div>
 
 
   <div class="pull-right" style="margin: 14px">
 <button id="nav_start" type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-forward"></span> Start</button>
-<button id="nav_stop" type="button" class="btn btn-danger" onclick="ws_control.send('stop')"><span class="glyphicon glyphicon-stop"></span> Stop</button>
+<button id="nav_stop" type="button" class="btn btn-danger" onclick="abortTask()"><span class="glyphicon glyphicon-stop"></span> Stop</button>
 </div>
 
 <div class="clearfix"></div>
@@ -153,7 +153,7 @@ background-image: linear-gradient(to bottom,#f5f5f5 0,#e8e8e8 100%);
   <div class="panel panel-default">
    <div class="panel-heading">
 
-    <select id="e2">
+    <select id="e2" style="margin-top: 5px">
     </select>
 
     <div class="btn-group btn-group-sm pull-right">
@@ -225,6 +225,13 @@ function runTask() {
       console.log(JSON.stringify(test));
 
      ws_control.send(JSON.stringify(test));
+}
+
+
+function abortTask() {
+      var test = {"cmd": "STOP"};
+      console.log(JSON.stringify(test));
+      ws_control.send(JSON.stringify(test));
 }
 
 
@@ -631,6 +638,7 @@ $(function() {
                   {
                       x = JSON.parse(e.data);
                       state = x.state;
+                      $('#state').html(state);
 
                       updateProgress(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100));
                       $('#act_temp').html(Highcharts.numberFormat(x.temperature, 0) + ' \xB0C');
