@@ -44,7 +44,7 @@ class Oven (threading.Thread):
         while True:
             if self.state == Oven.STATE_RUNNING:
                 self.runtime = (datetime.datetime.now() - self.start_time).total_seconds()
-                log.info("running at %.1f deg C, power %.2f (%.1fs/%.0f)"%(self.temp_sensor.temperature,self.power,self.runtime,self.totaltime))
+                log.info("running at %.1f deg C (Target: %.1f) , power %.2f (%.1fs/%.0f)"%(self.temp_sensor.temperature,self.target,self.power,self.runtime,self.totaltime))
                 self.target = self.profile.get_target_temperature(self.runtime)
                 
                 if self.temp_sensor.temperature < self.target:
@@ -115,13 +115,12 @@ class Profile():
         next_point = None
         
         for i in range(len(self.data)):
-            if time > self.data[i][0]:
-                prev_point = self.data[i]
-                next_point = self.data[i+1]
+            if time < self.data[i][0]:
+                prev_point = self.data[i-1]
+                next_point = self.data[i]
                 break
         
-        incl = (next_point[1] - prev_point[1]) / (next_point[0] - prev_point[0])
-        
+        incl = float(next_point[1] - prev_point[1]) / float(next_point[0] - prev_point[0])
         temp = prev_point[1] + (time - prev_point[0]) * incl
         return temp
         
