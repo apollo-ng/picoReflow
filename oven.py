@@ -25,6 +25,7 @@ class Oven (threading.Thread):
         self.state = Oven.STATE_IDLE
         self.temp_sensor = TempSensor(self)
         self.temp_sensor.start()
+        self.start()
 
     def run_profile(self, profile):
         self.profile = profile

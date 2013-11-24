@@ -12,38 +12,37 @@ log = logging.getLogger("picoreflowd")
 
 app = bottle.Bottle()
 oven = Oven()
-oven.start()
-wsocks = []
 wsocks_control = []
-
-def notifyAll(message):
-    message_json = json.dumps(message)
-    log.debug("sending to %d clients: %s"%(len(wsocks),message_json))
-    for wsock in wsocks:
-        if wsock:
-            try:
-                wsock.send(message_json)
-            except:
-                log.error("could not write to socket %s"%wsock)
-                wsocks.remove(wsock)
-        else:
-            wsocks.remove(wsock)
 
 class OvenWatcher(threading.Thread):
     def __init__(self,oven):
+        self.watchers = []
         threading.Thread.__init__(self)
         self.daemon = True
         
         self.oven = oven
+        self.start()
 
     def run(self):
         while True:
             oven_state = self.oven.get_state()
-            notifyAll(oven_state)
+            self.notifyAll(oven_state)
             time.sleep(1)
+    
+    def notifyAll(self,message):
+        message_json = json.dumps(message)
+        log.debug("sending to %d clients: %s"%(len(self.watchers),message_json))
+        for wsock in self.watchers:
+            if wsock:
+                try:
+                    wsock.send(message_json)
+                except:
+                    log.error("could not write to socket %s"%wsock)
+                    wsocks.remove(wsock)
+            else:
+                wsocks.remove(wsock)
 
 ovenWatcher = OvenWatcher(oven)
-ovenWatcher.start()
 
 @app.route('/')
 def index():
@@ -82,7 +81,6 @@ def handle_control():
         except WebSocketError:
             break
 
-
 @app.route('/status')
 def handle_websocket():
     env = bottle.request.environ;
@@ -91,7 +89,7 @@ def handle_websocket():
     if not wsock:
         abort(400, 'Expected WebSocket request.')
 
-    wsocks.append(wsock)
+    ovenWatcher.watchers.append(wsock)
     while True:
         try:
             message = wsock.receive()
@@ -99,12 +97,12 @@ def handle_websocket():
         except WebSocketError:
             break
 
-
 def main():
+    log.info("Starting picoreflowd")
     ip = "0.0.0.0"
     port = 8080
-    log.info("Starting picoreflowd")
     log.info("listening to %s:%d"%(ip,port))
+    
     server = WSGIServer((ip,port), app,
                     handler_class=WebSocketHandler)
     server.serve_forever()
