@@ -25,12 +25,6 @@ def send_static(filename):
     log.debug("serving %s"%filename)
     return bottle.static_file(filename, root='./public/')
 
-@app.route('/run')
-def start_oven():
-    oven.run_profile("abc")
-
-    return "Starting"
-
 def get_websocket_from_request():
     env = bottle.request.environ;
     wsock = env.get('wsgi.websocket')
