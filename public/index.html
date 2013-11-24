@@ -21,12 +21,13 @@
  <div class="container">
 
   <!-- Static navbar -->
-  <div class="navbar navbar-default" role="navigation">
+  <div id="main_nav" class="navbar navbar-default" role="navigation">
    <div class="pull-left" style="margin: 14px">
     <span id="act_temp" class="display" style="color: #75890c">25 &deg;C</span>
     <span id="target_temp" class="display">OFF</span>
-    <span id="state" class="display">Idle</span>
-    <span class="display">-</span>
+    <span id="state" class="display" style="font-size: 14px">Idle</span>
+    <span id="eta" class="display" style="width: 60px">-</span>
+    <span id="power" class="display" style="width: 35px;">&nbsp;</span>
    </div>
 
    <div class="pull-right" style="margin: 14px">
@@ -127,6 +128,7 @@ function runTask() {
       console.log(JSON.stringify(test));
 
      ws_control.send(JSON.stringify(test));
+     graph.series[1].setData([]);
 }
 
 
@@ -141,7 +143,12 @@ function enterEditMode() {
     //$('#e2').hide();
     $('#saveas').show();
     $('#e2').select2('container').hide();
+    $('#main_nav').hide();
     $('#form_profile_name').attr('value', profiles[selected_profile].name);
+    graph.series[0].options.marker.enabled=true;
+    graph.series[0].options.draggableX=true;
+    graph.series[0].options.draggableY=true;
+    graph.render();
 }
 
 
@@ -592,6 +599,14 @@ $(function() {
                           $("#nav_start").hide();
                           $("#nav_stop").show();
                         series.addPoint([x.runtime, x.temperature], true, false);
+
+                        left = parseInt(x.totaltime-x.runtime);
+                        var minutes = Math.floor(left / 60);
+                        var seconds = left - minutes * 60;
+                        $('#eta').html(minutes+':'+ (seconds < 10 ? "0" : "") + seconds);
+
+                        $('#power').css("background-color", (x.power > 0.5 ? "#75890c" : "#1F1E1A") );
+
                       }
                       else
                       {
@@ -675,10 +690,13 @@ $(function() {
             [240, 183 ],
             [300, 25 ]
           ],
-          draggableX: true,
-          draggableY: true,
+          draggableX: false,
+          draggableY: false,
           dragMinY: 0,
-          dragMaxY: 250
+          dragMaxY: 250,
+          marker: {
+            enabled: false
+          }
         },
         {
           name: 'Act',
