@@ -118,9 +118,12 @@ background-image: linear-gradient(to bottom,#f5f5f5 0,#e8e8e8 100%);
   <div class="navbar navbar-default" role="navigation">
 
 <div class="pull-left" style="margin: 14px">
-<span class="display" id="act_temp" >25 C</span>
-<span class="display">76 C</span>
+  <div id="act_temp" class="col-md-1">- °C</div>
+  <div class="col-md-1">- °C</div>
+  <div class="col-md-1">Idle</div>
+  <div class="col-md-1">-</div>
 </div>
+
 
   <div class="pull-right" style="margin: 14px">
 <button id="nav_start" type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal"><span class="glyphicon glyphicon-forward"></span> Start</button>
@@ -214,6 +217,14 @@ var st = new WebSocket(host+"/storage");
 
 var state = "IDLE";
 var graph;
+
+st.onmessage = function(e)
+{
+console.log('Storage MSG:' + e.data);
+}
+
+var test = st.send('GET');
+console.log('Requesting Profiles: ' +test);
 
 c.onmessage = function(e)
 {
