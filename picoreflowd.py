@@ -31,14 +31,15 @@ def start_oven():
 
     return "Starting"
 
-@app.route('/control')
-def handle_control():
+def get_websocket_from_request():
     env = bottle.request.environ;
-    print env
     wsock = env.get('wsgi.websocket')
     if not wsock:
         abort(400, 'Expected WebSocket request.')
 
+@app.route('/control')
+def handle_control():
+    wsock = get_websocket_from_request()
     wsocks_control.append(wsock)
     while True:
         try:
@@ -55,32 +56,22 @@ def handle_control():
 
 @app.route('/storage')
 def handle_storage():
-    env = bottle.request.environ;
-    print env
-    wsock = env.get('wsgi.websocket')
-    if not wsock:
-        abort(400, 'Expected WebSocket request.')
+    wsock = get_websocket_from_request()
 
     while True:
         try:
             message = wsock.receive()
-            wsock.send("Your message was: %r" % message)
             if message == "GET":
                 log.info("GET command recived")
-                return getProfiles()
+                wsock.send(get_profiles())
             elif message == "PUT":
                 log.info("PUT command received")
         except WebSocketError:
             break
 
 @app.route('/status')
-def handle_websocket():
-    env = bottle.request.environ;
-    print env
-    wsock = env.get('wsgi.websocket')
-    if not wsock:
-        abort(400, 'Expected WebSocket request.')
-
+def handle_status():
+    wsock = get_websocket_from_request()
     ovenWatcher.addObserver(wsock)
     while True:
         try:
@@ -89,7 +80,7 @@ def handle_websocket():
         except WebSocketError:
             break
 
-def getProfiles():
+def get_profiles():
     script_dir = os.path.dirname(os.path.realpath(__file__))
     path = os.path.join(script_dir,"storage","profiles")
     print path
@@ -101,7 +92,6 @@ def getProfiles():
     for filename in profile_files:
         with open(os.path.join(path,filename), 'r') as f:
             profiles.append(json.load(f))
-    print json.dumps(profiles)
     return json.dumps(profiles)
 
 def main():
