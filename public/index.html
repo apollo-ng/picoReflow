@@ -153,7 +153,7 @@ function enterEditMode() {
 
 
 function saveProfile() {
-    name = $('#form_profile_name').attr('value')
+    name = $('#form_profile_name').val();
     console.log('Trying to save profile: ' + name);
     var rawdata = graph.series[0].data;
     var data = [];
