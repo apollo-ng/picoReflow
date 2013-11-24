@@ -4,17 +4,17 @@ import bottle
 from gevent.pywsgi import WSGIServer
 from geventwebsocket import WebSocketHandler, WebSocketError
 
-from oven import Oven
-from ovenWatcher import OvenWatcher
-
 log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
 logging.basicConfig(level = logging.DEBUG, format = log_format)
 log = logging.getLogger("picoreflowd")
+log.info("Starting picoreflowd")
+
+from oven import Oven
+from ovenWatcher import OvenWatcher
 
 app = bottle.Bottle()
 oven = Oven()
 ovenWatcher = OvenWatcher(oven)
-wsocks_control = []
 
 @app.route('/')
 def index():
@@ -41,7 +41,6 @@ def get_websocket_from_request():
 @app.route('/control')
 def handle_control():
     wsock = get_websocket_from_request()
-    wsocks_control.append(wsock)
     while True:
         try:
             message = wsock.receive()
@@ -96,7 +95,6 @@ def get_profiles():
     return json.dumps(profiles)
 
 def main():
-    log.info("Starting picoreflowd")
     ip = "0.0.0.0"
     port = 8080
     log.info("listening to %s:%d"%(ip,port))
