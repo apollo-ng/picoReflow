@@ -65,11 +65,21 @@ def handle_storage():
             message = wsock.receive()
             if not message:
                 break
+            print message
+            
+            try:
+                msgdict = json.loads(message)
+            except:
+                msgdict = {}
+            
             if message == "GET":
                 log.info("GET command recived")
                 wsock.send(get_profiles())
-            elif message == "PUT":
+            elif msgdict.get("cmd") == "PUT":
                 log.info("PUT command received")
+                profile_obj = msgdict.get('profile')
+                if profile_obj:
+                    save_profile(profile_obj)
         except WebSocketError:
             break
     log.info("websocket (storage) closed")
@@ -87,19 +97,28 @@ def handle_status():
             break
     log.info("websocket (status) closed")
 
+script_dir = os.path.dirname(os.path.realpath(__file__))
+profile_path = os.path.join(script_dir,"storage","profiles")
+
 def get_profiles():
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    path = os.path.join(script_dir,"storage","profiles")
-    print path
     try :
-        profile_files = os.listdir(path)
+        profile_files = os.listdir(profile_path)
     except : 
         profile_files = []
     profiles = []
     for filename in profile_files:
-        with open(os.path.join(path,filename), 'r') as f:
+        with open(os.path.join(profile_path,filename), 'r') as f:
             profiles.append(json.load(f))
     return json.dumps(profiles)
+
+def save_profile(profile):
+    profile_json = json.dumps(profile)
+    filename = profile['name']+".json"
+    filepath = os.path.join(profile_path,filename)
+    with open(filepath, 'w+') as f:
+        print filepath
+        f.write(profile_json)
+        f.close()
 
 def main():
     ip = "0.0.0.0"
