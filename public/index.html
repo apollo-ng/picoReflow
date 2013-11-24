@@ -23,8 +23,8 @@
   <!-- Static navbar -->
   <div class="navbar navbar-default" role="navigation">
    <div class="pull-left" style="margin: 14px">
-    <span id="act_temp" class="display">- °C</span>
-    <span class="display">- °C</span>
+    <span id="act_temp" class="display" style="color: #75890c">25 &deg;C</span>
+    <span id="target_temp" class="display">OFF</span>
     <span id="state" class="display">Idle</span>
     <span class="display">-</span>
    </div>
@@ -536,7 +536,16 @@ $(function() {
                       $('#state').html(state);
 
                       updateProgress(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100));
+
                       $('#act_temp').html(Highcharts.numberFormat(x.temperature, 0) + ' \xB0C');
+                      if (x.target == 0)
+                      {
+                          $('#target_temp').html('OFF');
+                      }
+                      else
+                      {
+                        $('#target_temp').html(Highcharts.numberFormat(x.target, 0) + ' \xB0C');
+                  }
                       //console.log (e.data);
                       //console.log('Percent finished:' + perc);
 
