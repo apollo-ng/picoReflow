@@ -211,25 +211,47 @@ function updateProgress(percentage){
 
 var host = "ws://" + window.location.hostname + ":8080";
 
-var s = new WebSocket(host+"/status");
+
 var c = new WebSocket(host+"/control");
-var st = new WebSocket(host+"/storage");
-
-var state = "IDLE";
-var graph;
-
-st.onmessage = function(e)
-{
-console.log('Storage MSG:' + e.data);
-}
-
-var test = st.send('GET');
-console.log('Requesting Profiles: ' +test);
 
 c.onmessage = function(e)
 {
   console.log (e.data);
 }
+
+var state = "IDLE";
+var graph;
+
+// Status Socket
+
+var ws_status = new WebSocket(host+"/status");
+
+ws_status.onopen = function()
+{
+    console.log("Status Socket has been opened");
+}
+
+// Storage Socket
+
+var ws_storage = new WebSocket(host+"/storage");
+
+ws_storage.onopen = function()
+{
+    console.log("Storage Socket has been opened");
+
+    ws_storage.onmessage = function(e)
+    {
+       console.log('Storage MSG:' + e.data);
+    }
+
+    console.log('Requesting stored profiles');
+
+    ws_storage.send('GET');
+}
+
+
+
+
 
 
 $("#e2").select2({
@@ -534,7 +556,7 @@ $(function() {
                   var series = this.series[1];
 
 
-                  s.onmessage = function(e)
+                  ws_status.onmessage = function(e)
                   {
                       x = JSON.parse(e.data);
                       state = x.state;
@@ -650,6 +672,8 @@ $(function() {
   };
 
 graph = new Highcharts.Chart(options);
+
+
 
 });
 
