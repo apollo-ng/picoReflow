@@ -1,4 +1,4 @@
-import threading,time,random,datetime,logging
+import threading,time,random,datetime,logging,json
 
 log = logging.getLogger(__name__)
 
@@ -68,7 +68,6 @@ class Oven (threading.Thread):
         return state
 
 class TempSensor(threading.Thread):
-    
     def __init__(self,oven):
         threading.Thread.__init__(self)
         self.daemon = True
@@ -83,7 +82,6 @@ class TempSensor(threading.Thread):
             units = "c"
             self.thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
 
-
     def run(self):
         while True:
             if not sensor_dummy:
@@ -95,9 +93,20 @@ class TempSensor(threading.Thread):
             
             time.sleep(1)
 
-
-
+class Profile():
+    def __init__(self,json_data):
+        obj = json.loads(json_data)
+        self.name = obj["name"]
+        self.data = obj["data"]
+    
+    def get_duration(self):
+        return max([t for (t,x) in self.data])
+    
 if __name__ == "__main__":
-    my_oven = Oven()
-    my_oven.run_profile("abc")
+    #my_oven = Oven()
+    #my_oven.run_profile("abc")
+    with open("storage/profiles/lead.json",'r') as f:
+        p = Profile(f.read())
+        print p.get_duration()
+    
 
