@@ -44,7 +44,7 @@
   <div class="panel panel-default">
    <div class="panel-heading">
 
-    <select id="e2" style="margin-top: 5px"></select>
+    <select id="e2" style="margin-top: 4px"></select>
 
     <div id="saveas" class="input-group" style="display:none;">
       <span class="input-group-addon">Profile Name</span>
@@ -139,11 +139,10 @@ function abortTask() {
 
 
 function enterEditMode() {
-    //$('#e2').hide();
     state="EDIT"
+    $('#main_status').slideUp();
     $('#saveas').show();
     $('#e2').select2('container').hide();
-    $('#main_status').slideUp();
     $('#nav_start').hide();
     $('#btn_edit').hide();
     $('#btn_exit').show();
@@ -241,11 +240,11 @@ ws_storage.onopen = function()
     ws_storage.onmessage = function(e)
     {
        console.log('Storage MSG:' + e.data);
-      
+
        message = JSON.parse(e.data);
 
        console.log("Parsed message:" + message);
-       
+
        if(message.resp)
        {
          console.log("RESP");
@@ -326,6 +325,7 @@ function update_profile(id) {
    colors: ["#D8D3C5", "#75890c", "#c70000", "#55BF3B", "#DF5353", "#aaeeee", "#ff0066", "#eeaaee",
       "#55BF3B", "#DF5353", "#7798BF", "#aaeeee"],
    chart: {
+       /*
       backgroundColor: {
          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
          stops: [
@@ -333,6 +333,8 @@ function update_profile(id) {
             [1, '#383734']
          ]
       },
+      * */
+      backgroundColor:'rgba(255, 255, 255, 0)',
       borderWidth: 0,
       borderRadius: 0,
       plotBackgroundColor: null,

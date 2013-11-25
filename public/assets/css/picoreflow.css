@@ -37,7 +37,7 @@ background: #3F3E3A url('/picoreflow/assets/images/panel_bg.png') repeat;
 -webkit-box-shadow: 0 0 1.5em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
 box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
 border-color: #282828;
-height: 100px;
+height: 97px;
 }
 
 
@@ -45,10 +45,11 @@ height: 100px;
 -webkit-border-radius: 7px;
 -moz-border-radius: 7px;
 border-radius: 7px;
--moz-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
--webkit-box-shadow: 0 0 1.5em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
+-moz-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.55);
+-webkit-box-shadow: 0 0 1.5em 0 rgba(0,0,0,0.55);
+box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.55);
 margin-top: 15px;
+background: #3F3E3A;
 }
 
 .panel-heading {
