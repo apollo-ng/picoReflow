@@ -78,8 +78,15 @@ def handle_storage():
             elif msgdict.get("cmd") == "PUT":
                 log.info("PUT command received")
                 profile_obj = msgdict.get('profile')
+                force = msgdict.get('force',False)
                 if profile_obj:
-                    save_profile(profile_obj)
+                    #del msgdict["cmd"]
+                    if save_profile(profile_obj,force):
+                        msgdict["resp"]="OK"
+                    else:
+                        msgdict["resp"]="FAIL"
+                    print "sending:" +str(msgdict)
+                    wsock.send(json.dumps(msgdict))
         except WebSocketError:
             break
     log.info("websocket (storage) closed")
@@ -111,14 +118,19 @@ def get_profiles():
             profiles.append(json.load(f))
     return json.dumps(profiles)
 
-def save_profile(profile):
+def save_profile(profile, force=False):
     profile_json = json.dumps(profile)
     filename = profile['name']+".json"
     filepath = os.path.join(profile_path,filename)
+    if not force and os.path.exists(filepath):
+        print "Didnt write"
+        return False
     with open(filepath, 'w+') as f:
         print filepath
         f.write(profile_json)
         f.close()
+    print "Did write"
+    return True
 
 def main():
     ip = "0.0.0.0"
