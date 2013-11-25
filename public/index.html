@@ -165,7 +165,6 @@ function leaveEditMode() {
     graph.series[0].options.marker.enabled=false;
     graph.series[0].options.draggableX=false;
     graph.series[0].options.draggableY=false;
-    ws_storage.send('GET');
     graph.render();
 }
 
@@ -259,7 +258,7 @@ ws_storage.onopen = function()
                console.log("Sending: " + JSON.stringify(message));
                ws_storage.send(JSON.stringify(message));
             } else {
-               ws_storage.send("GET");
+               //do nothing
             }
          }
          return;
@@ -289,6 +288,8 @@ ws_storage.onopen = function()
                 }
 
         }
+        
+        graph.render();
 
     }
 

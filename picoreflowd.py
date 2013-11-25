@@ -87,6 +87,7 @@ def handle_storage():
                         msgdict["resp"]="FAIL"
                     print "sending:" +str(msgdict)
                     wsock.send(json.dumps(msgdict))
+                    wsock.send(get_profiles())
         except WebSocketError:
             break
     log.info("websocket (storage) closed")
