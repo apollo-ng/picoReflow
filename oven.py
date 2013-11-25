@@ -12,12 +12,16 @@ except ImportError:
 class Oven (threading.Thread):
     STATE_IDLE     = "IDLE"
     STATE_RUNNING  = "RUNNING"
-    STATE_ABORT    = "ABORT"
-    STATE_ERROR    = "ERROR"
 
     def __init__(self):
         threading.Thread.__init__(self)
         self.daemon = True
+        self.reset()
+        self.temp_sensor = TempSensor(self)
+        self.temp_sensor.start()
+        self.start()
+    
+    def reset(self):
         self.profile = None
         self.start_time = 0
         self.runtime = 0
@@ -25,10 +29,7 @@ class Oven (threading.Thread):
         self.target = 0
         self.power = 0.0
         self.state = Oven.STATE_IDLE
-        self.temp_sensor = TempSensor(self)
-        self.temp_sensor.start()
-        self.start()
-
+    
     def run_profile(self, profile):
         log.info("Running profile %s"%profile.name)
         self.profile = profile
@@ -38,7 +39,7 @@ class Oven (threading.Thread):
         log.info("Starting")
 
     def abort_run(self):
-        self.state = Oven.STATE_ABORT
+        self.reset()
 
     def run(self):
         while True:
@@ -52,18 +53,10 @@ class Oven (threading.Thread):
                 else:
                     self.power = 0.0
                 if self.runtime >= self.totaltime:
-                    self.power = 0.0
-                    self.runtime = 0
-                    self.state = Oven.STATE_IDLE
-            elif self.state == Oven.STATE_ABORT:
-                self.power = 0.0
-                self.runtime = 0
-                self.state = Oven.STATE_IDLE
+                    self.reset()
             time.sleep(1)
 
-
     def get_state(self):
-        
         state = {
             'runtime': self.runtime,
             'temperature': self.temp_sensor.temperature,
@@ -125,12 +118,3 @@ class Profile():
         incl = float(next_point[1] - prev_point[1]) / float(next_point[0] - prev_point[0])
         temp = prev_point[1] + (time - prev_point[0]) * incl
         return temp
-        
-if __name__ == "__main__":
-    #my_oven = Oven()
-    #my_oven.run_profile("abc")
-    with open("storage/profiles/lead.json",'r') as f:
-        p = Profile(f.read())
-        print p.get_duration()
-    
-
