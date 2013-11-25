@@ -25,8 +25,7 @@ border-color: #000000;
 }
 
 
-.navbar-default {
-
+#main_status {
 margin-top: 15px;
 color: #d8d3c5;
 font-weight: normal;
@@ -38,11 +37,10 @@ background: #3F3E3A url('/picoreflow/assets/images/panel_bg.png') repeat;
 -webkit-box-shadow: 0 0 1.5em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
 box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
 border-color: #282828;
+height: 100px;
 }
 
-.navbar-brand {
-    color: #d8d3c5;
-}
+
 .panel-default {
 -webkit-border-radius: 7px;
 -moz-border-radius: 7px;
@@ -50,7 +48,7 @@ border-radius: 7px;
 -moz-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
 -webkit-box-shadow: 0 0 1.5em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
 box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.35),inset 0 0 9px 2px #000;
-
+margin-top: 15px;
 }
 
 .panel-heading {

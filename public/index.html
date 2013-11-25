@@ -21,7 +21,7 @@
  <div class="container">
 
   <!-- Static navbar -->
-  <div id="main_nav" class="navbar navbar-default" role="navigation">
+  <div id="main_status">
    <div class="pull-left" style="margin: 14px">
     <span id="act_temp" class="display" style="color: #75890c">25 &deg;C</span>
     <span id="target_temp" class="display">OFF</span>
@@ -93,8 +93,10 @@
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="runTask()">Start Job</button>
+       <div class="btn-group" style="width: 100%">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">No, take me back</button>
+        <button type="button" class="btn btn-success" data-dismiss="modal" onclick="runTask()">Yes, start the Run</button>
+        </div>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
@@ -141,7 +143,7 @@ function enterEditMode() {
     state="EDIT"
     $('#saveas').show();
     $('#e2').select2('container').hide();
-    $('#main_nav').slideUp();
+    $('#main_status').slideUp();
     $('#nav_start').hide();
     $('#btn_edit').hide();
     $('#btn_exit').show();
@@ -156,7 +158,7 @@ function leaveEditMode() {
     state="IDLE";
     $('#saveas').hide();
     $('#e2').select2('container').show();
-    $('#main_nav').slideDown();
+    $('#main_status').slideDown();
     $('#nav_start').show();
     $('#btn_edit').show();
     $('#btn_exit').hide();
