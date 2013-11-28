@@ -4,7 +4,7 @@ function updateProgress(percentage){
     if(state=="RUNNING") {
     if(percentage > 100) percentage = 100;
     $('#progressBar').css('width', percentage+'%');
-    if(percentage>=5) $('#progressBar').html(percentage+'%');
+    if(percentage>=5) $('#progressBar').html(parseInt(percentage)+'%');
 } else {
     $('#progressBar').css('width', 0+'%');
     $('#progressBar').html('');
@@ -347,3 +347,190 @@ function update_profile(id) {
    textColor: '#E0E0E0',
    maskColor: 'rgba(255,255,255,0.3)'
 };
+
+
+
+
+function getHCOptions() {
+
+  var options =
+  {
+      title: { text: '' },
+      xAxis: {
+          title: { text: 'Time (s)' },
+          type: 'integer',
+          tickPixelInterval: 60
+      },
+      yAxis: {
+          title: { text: 'Temperature (\xB0C)' },
+          tickInterval: 25,
+          min: 0,
+          max: 300
+      },
+      tooltip: {
+            formatter: function() {
+                return Highcharts.numberFormat(this.y, 0);
+            }
+      },
+      chart: {
+          type: 'line',
+          renderTo: 'graph_container',
+          animation: true,
+          zoomType: 'x',
+          marginTop: 30,
+          marginRight: 30,
+          events: {
+              load: function() {
+                  var series = this.series[1];
+
+
+                  ws_status.onmessage = function(e)
+                  {
+                      x = JSON.parse(e.data);
+
+                      if(state!="EDIT")
+                      {
+                      state = x.state;
+                      }
+
+                      $('#state').html(state);
+
+                      updateProgress(parseFloat(x.runtime)/parseFloat(x.totaltime)*100);
+
+                      $('#act_temp').html(Highcharts.numberFormat(x.temperature, 0) + ' \xB0C');
+                      $('#power').css("background-color", (x.power > 0.5 ? "#75890c" : "#1F1E1A") );
+
+
+                      if (x.target == 0)
+                      {
+                          $('#target_temp').html('OFF');
+                      }
+                      else
+                      {
+                        $('#target_temp').html(Highcharts.numberFormat(x.target, 0) + ' \xB0C');
+                  }
+                      //console.log (e.data);
+                      //console.log('Percent finished:' + perc);
+
+                      if(state!="EDIT")
+                      {
+
+                      if(state=="RUNNING")
+                      {
+                          $("#nav_start").hide();
+                          $("#nav_stop").show();
+                        series.addPoint([x.runtime, x.temperature], true, false);
+
+                        left = parseInt(x.totaltime-x.runtime);
+                        var minutes = Math.floor(left / 60);
+                        var seconds = left - minutes * 60;
+                        $('#eta').html(minutes+':'+ (seconds < 10 ? "0" : "") + seconds);
+
+                      }
+                      else
+                      {
+                          $("#nav_start").show();
+                          $("#nav_stop").hide();
+                      }
+                  }
+
+                  }
+
+                  /*
+                  var socket = io.connect('http://10.1.1.110:8080');
+                  socket.on('sample', function (sample) {
+                      // when a sample arrives we plot it
+                      series.addPoint([sample.x, sample.y], true, false);
+                      $('#act_temp').html(Highcharts.numberFormat(sample.y, 0) + ' \xB0C');
+
+
+                  });
+
+                  socket.on('error', function () {
+
+                   $(document).trigger("add-alerts", [
+                    {
+                      'message': "No communication to control server",
+                      'priority': 'error'
+                    }
+                  ]);
+
+
+                  })
+
+                  // Called when the connection to the server is opened.
+                  socket.onopen = function () {
+                    alert("Connection with server open.");
+                  };
+
+                  // Called when the connection to the server is closed.
+                  socket.onclose = function () {
+                    alert("Connection with server closed; Maybe the server wasn't found, it shut down or you're behind a firewall/proxy.");
+                  };
+*/
+              }
+          },
+          resetZoomButton: {
+             position: {
+                 align: 'right',
+                 verticalAlign: 'top'
+             }
+          }
+      },
+
+      plotOptions: {
+         series: {
+             cursor: 'all-scroll',
+             point: {
+                 events: {
+                     /*
+                     drag: function (e) {
+                        $('#drag').html('Dragging <b>' + this.series.name + '</b>, <b>' + this.category + '</b> to <b>' + Highcharts.numberFormat(e.newY, 0) + '</b>');
+                     },
+                     drop: function () {
+                        $('#drop').html('In <b>' + this.series.name + '</b>, <b>' + this.category + '</b> was set to <b>' + Highcharts.numberFormat(this.y, 0) + '</b>');
+                     }*/
+                 }
+             },
+             stickyTracking: false
+         },
+
+      },
+
+      credits: {
+        enabled: false
+      },
+
+      series: [{
+        name: 'Ref',
+          data: [
+            [1, 25   ],
+            [70, 150 ],
+            [180, 183 ],
+            [210, 230 ],
+            [240, 183 ],
+            [300, 25 ]
+          ],
+          draggableX: false,
+          draggableY: false,
+          dragMinY: 0,
+          dragMaxY: 250,
+          marker: {
+            enabled: false
+          }
+        },
+        {
+          name: 'Act',
+          data: [
+            [0,0]
+          ],
+          marker: {
+            enabled: false
+          }
+        }]
+
+  };
+
+  return (options);
+
+}

@@ -7,7 +7,7 @@ class OvenWatcher(threading.Thread):
         self.observers = []
         threading.Thread.__init__(self)
         self.daemon = True
-        
+
         self.oven = oven
         self.start()
 
@@ -15,11 +15,11 @@ class OvenWatcher(threading.Thread):
         while True:
             oven_state = self.oven.get_state()
             self.notifyAll(oven_state)
-            time.sleep(1)
-    
+            time.sleep(0.5)
+
     def addObserver(self,observer):
         self.observers.append(observer)
-    
+
     def notifyAll(self,message):
         message_json = json.dumps(message)
         log.debug("sending to %d clients: %s"%(len(self.observers),message_json))
