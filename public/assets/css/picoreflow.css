@@ -109,3 +109,14 @@ background: #3F3E3A;
     margin-top: 4px;
 
 }
+
+.alert {
+background-image: -webkit-gradient(linear,left 0,left 100%,from(#d9534f),to(#c12e2a));
+background-image: -webkit-linear-gradient(top,#d9534f 0,#c12e2a 100%);
+background-image: -moz-linear-gradient(top,#d9534f 0,#c12e2a 100%);
+background-image: linear-gradient(to bottom,#d9534f 0,#c12e2a 100%);
+background-repeat: repeat-x;
+border-color: #b92c28;
+}
+
+

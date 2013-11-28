@@ -1,10 +1,19 @@
+var state = "IDLE";
+var graph;
+var profiles = [];
+var selected_profile = 0;
+var selected_profile_name = "leadfree";
+var host = "ws://" + window.location.hostname + ":8080";
+var ws_status = new WebSocket(host+"/status");
+var ws_control = new WebSocket(host+"/control");
+var ws_storage = new WebSocket(host+"/storage");
 
 
-function updateProgress(percentage){
+function updateProgress(percentage, eta){
     if(state=="RUNNING") {
     if(percentage > 100) percentage = 100;
     $('#progressBar').css('width', percentage+'%');
-    if(percentage>=5) $('#progressBar').html(parseInt(percentage)+'%');
+    if(percentage>9) $('#progressBar').html(parseInt(percentage)+'% - '+ eta);
 } else {
     $('#progressBar').css('width', 0+'%');
     $('#progressBar').html('');
@@ -18,7 +27,7 @@ function runTask() {
           "profile": profiles[selected_profile]
       }
 
-      console.log(JSON.stringify(test));
+      //console.log(JSON.stringify(test));
 
      ws_control.send(JSON.stringify(test));
      graph.series[1].setData([]);
@@ -27,7 +36,7 @@ function runTask() {
 
 function abortTask() {
       var test = {"cmd": "STOP"};
-      console.log(JSON.stringify(test));
+      //console.log(JSON.stringify(test));
       ws_control.send(JSON.stringify(test));
 }
 
@@ -63,13 +72,34 @@ function leaveEditMode() {
 
 function saveProfile() {
     name = $('#form_profile_name').val();
-    console.log('Trying to save profile: ' + name);
+    //console.log('Trying to save profile: ' + name);
     var rawdata = graph.series[0].data;
     var data = [];
+    var last = -1;
 
     for(var i=0; i<rawdata.length;i++)
     {
-        data.push([rawdata[i].x, rawdata[i].y]);
+        if(rawdata[i].x > last)
+        {
+          data.push([rawdata[i].x, rawdata[i].y]);
+        }
+        else
+        {
+          $.bootstrapGrowl("<span class=\"glyphicon glyphicon-exclamation-sign\"></span> <b>ERROR 88:</b><br/>An oven is not a time-machine", {
+            ele: 'body', // which element to append to
+            type: 'alert', // (null, 'info', 'error', 'success')
+            offset: {from: 'top', amount: 250}, // 'top', or 'bottom'
+            align: 'center', // ('left', 'right', or 'center')
+            width: 385, // (integer, or 'auto')
+            delay: 5000,
+            allow_dismiss: true,
+            stackup_spacing: 10 // spacing between consecutively stacked growls.
+          });
+
+          return false;
+        }
+
+        last = rawdata[i].x;
     }
 
     var profile = { "type": "profile", "data": data, "name": name }
@@ -79,7 +109,7 @@ function saveProfile() {
 
     ws_storage.send(put_cmd);
 
-    console.log('came to this: ' + put_cmd);
+    //console.log('came to this: ' + put_cmd);
 
     selected_profile_name = name;
 
@@ -89,10 +119,10 @@ function saveProfile() {
 
 
 function update_profile(id) {
-  console.log('Profile selected:' + profiles[id].name);
+  //console.log('Profile selected:' + profiles[id].name);
   selected_profile = id;
   $('#sel_prof').html(profiles[id].name);
-  console.log(graph.series);
+  //console.log(graph.series);
   graph.series[0].setData(profiles[id].data);
 }
 
@@ -376,12 +406,13 @@ function getHCOptions() {
           type: 'line',
           renderTo: 'graph_container',
           animation: true,
-          zoomType: 'x',
+          //zoomType: 'x',
           marginTop: 30,
           marginRight: 30,
           events: {
               load: function() {
                   var series = this.series[1];
+                  eta=0;
 
 
                   ws_status.onmessage = function(e)
@@ -390,12 +421,31 @@ function getHCOptions() {
 
                       if(state!="EDIT")
                       {
-                      state = x.state;
+                        state = x.state;
+
+                        if(state=="RUNNING")
+                        {
+                          $("#nav_start").hide();
+                          $("#nav_stop").show();
+                          series.addPoint([x.runtime, x.temperature], true, false);
+
+                          left = parseInt(x.totaltime-x.runtime);
+                          var minutes = Math.floor(left / 60);
+                          var seconds = left - minutes * 60;
+                          eta = minutes+':'+ (seconds < 10 ? "0" : "") + seconds;
+
+                        }
+                        else
+                        {
+                          $("#nav_start").show();
+                          $("#nav_stop").hide();
+                        }
+
                       }
 
                       $('#state').html(state);
 
-                      updateProgress(parseFloat(x.runtime)/parseFloat(x.totaltime)*100);
+                      updateProgress(parseFloat(x.runtime)/parseFloat(x.totaltime)*100,eta);
 
                       $('#act_temp').html(Highcharts.numberFormat(x.temperature, 0) + ' \xB0C');
                       $('#power').css("background-color", (x.power > 0.5 ? "#75890c" : "#1F1E1A") );
@@ -408,66 +458,8 @@ function getHCOptions() {
                       else
                       {
                         $('#target_temp').html(Highcharts.numberFormat(x.target, 0) + ' \xB0C');
-                  }
-                      //console.log (e.data);
-                      //console.log('Percent finished:' + perc);
-
-                      if(state!="EDIT")
-                      {
-
-                      if(state=="RUNNING")
-                      {
-                          $("#nav_start").hide();
-                          $("#nav_stop").show();
-                        series.addPoint([x.runtime, x.temperature], true, false);
-
-                        left = parseInt(x.totaltime-x.runtime);
-                        var minutes = Math.floor(left / 60);
-                        var seconds = left - minutes * 60;
-                        $('#eta').html(minutes+':'+ (seconds < 10 ? "0" : "") + seconds);
-
-                      }
-                      else
-                      {
-                          $("#nav_start").show();
-                          $("#nav_stop").hide();
                       }
                   }
-
-                  }
-
-                  /*
-                  var socket = io.connect('http://10.1.1.110:8080');
-                  socket.on('sample', function (sample) {
-                      // when a sample arrives we plot it
-                      series.addPoint([sample.x, sample.y], true, false);
-                      $('#act_temp').html(Highcharts.numberFormat(sample.y, 0) + ' \xB0C');
-
-
-                  });
-
-                  socket.on('error', function () {
-
-                   $(document).trigger("add-alerts", [
-                    {
-                      'message': "No communication to control server",
-                      'priority': 'error'
-                    }
-                  ]);
-
-
-                  })
-
-                  // Called when the connection to the server is opened.
-                  socket.onopen = function () {
-                    alert("Connection with server open.");
-                  };
-
-                  // Called when the connection to the server is closed.
-                  socket.onclose = function () {
-                    alert("Connection with server closed; Maybe the server wasn't found, it shut down or you're behind a firewall/proxy.");
-                  };
-*/
               }
           },
           resetZoomButton: {
@@ -480,7 +472,7 @@ function getHCOptions() {
 
       plotOptions: {
          series: {
-             cursor: 'all-scroll',
+             cursor: 'move',
              point: {
                  events: {
                      /*
@@ -534,3 +526,152 @@ function getHCOptions() {
   return (options);
 
 }
+
+
+
+$(document).ready(function() {
+
+  if(!("WebSocket" in window)){
+  $('#chatLog, input, button, #examples').fadeOut("fast");
+  $('<p>Oh no, you need a browser that supports WebSockets. How about <a href="http://www.google.com/chrome">Google Chrome</a>?</p>').appendTo('#container');
+  }else{
+
+
+// Status Socket ////////////////////////////////
+
+ws_status.onopen = function()
+{
+    console.log("Status Socket has been opened");
+};
+
+ws_status.onclose = function()
+{
+         $.bootstrapGrowl("<span class=\"glyphicon glyphicon-exclamation-sign\"></span> <b>ERROR 1:</b><br/>Status Websocket not available", {
+            ele: 'body', // which element to append to
+            type: 'alert', // (null, 'info', 'error', 'success')
+            offset: {from: 'top', amount: 250}, // 'top', or 'bottom'
+            align: 'center', // ('left', 'right', or 'center')
+            width: 385, // (integer, or 'auto')
+            delay: 5000,
+            allow_dismiss: true,
+            stackup_spacing: 10 // spacing between consecutively stacked growls.
+          });
+};
+
+
+// Control Socket ////////////////////////////////
+
+
+ws_control.onopen = function()
+{
+    ws_control.onmessage = function(e)
+    {
+        console.log (e.data);
+    }
+
+    console.log("Control Socket has been opened");
+}
+
+
+// Storage Socket ///////////////////////////////
+
+ws_storage.onopen = function()
+{
+    console.log("Storage Socket has been opened");
+
+    ws_storage.onmessage = function(e)
+    {
+       console.log('Storage MSG:' + e.data);
+
+       message = JSON.parse(e.data);
+
+       console.log("Parsed message:" + message);
+
+       if(message.resp)
+       {
+         console.log("RESP");
+         if(message.resp == "FAIL")
+         {
+            console.log("FAIL");
+            if (confirm('Overwrite?')) {
+               //message.cmd="PUT";
+               message.force=true;
+               console.log("Sending: " + JSON.stringify(message));
+               ws_storage.send(JSON.stringify(message));
+            } else {
+               //do nothing
+            }
+         }
+         return;
+       }
+       //the message is an array of profiles
+       //FIXME: this should be better, maybe a {"profiles": ...} container?
+       profiles = message;
+        //delete old options in select
+        $('#e2')
+        .find('option')
+        .remove()
+        .end();
+
+        // fill select with new options from websocket
+        for (var i=0; i<profiles.length; i++)
+        {
+                var profile = profiles[i];
+                console.log(profile.name);
+                $('#e2').append('<option value="'+i+'">'+profile.name+'</option>');
+
+                if (profile.name == selected_profile_name)
+                {
+                    console.log('Matchiemazvhie');
+                    selected_profile = i;
+                    $('#e2').select2('val', i);
+                    update_profile(i);
+                }
+
+        }
+
+        graph.render();
+
+    }
+
+    console.log('Requesting stored profiles');
+    ws_storage.send('GET');
+}
+
+
+
+$("#e2").select2({
+  placeholder: "Select Profile",
+  allowClear: false
+});
+
+
+$("#e2").on("change", function(e) {
+  update_profile(e.val);
+});
+
+
+
+// Apply the theme
+var highchartsOptions = Highcharts.setOptions(Highcharts.theme);
+
+
+$(function() {
+  Highcharts.setOptions({
+      global: {
+          useUTC: false
+      }
+  });
+
+graph = new Highcharts.Chart(getHCOptions());
+
+
+});
+
+
+
+  }
+});
+
+
+

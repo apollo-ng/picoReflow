@@ -4,13 +4,14 @@
 
  <title>PicoReflow</title>
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
  <script src="assets/js/jquery-1.10.2.min.js"></script>
  <script src="assets/js/highcharts.js"></script>
  <script src="assets/js/draggable-points.js"></script>
  <script src="assets/js/bootstrap.min.js"></script>
+ <script src="assets/js/jquery.bootstrap-growl.min.js"></script>
  <script src="assets/js/select2.min.js"></script>
  <script src="assets/js/picoreflow.js"></script>
-
 
  <link rel="stylesheet" href="assets/css/bootstrap.min.css"/>
  <link rel="stylesheet" href="assets/css/bootstrap-theme.min.css"/>
@@ -27,8 +28,9 @@
     <span id="act_temp" class="display" style="color: #75890c">25 &deg;C</span>
     <span id="target_temp" class="display">OFF</span>
     <span id="state" class="display" style="font-size: 14px; text-align: center; padding-right:0">Idle</span>
-    <span id="eta" class="display" style="width: 60px">-</span>
     <span id="power" class="display" style="width: 35px;">&nbsp;</span>
+    <span id="cyclic" class="display" style="width: 35px;">&nbsp;</span>
+    <span id="cool" class="display" style="width: 35px;">&nbsp;</span>
    </div>
 
    <div class="clearfix"></div>
@@ -53,10 +55,9 @@
         <button class="btn btn-success" type="button" onclick="saveProfile();">Save</button>
         <button id="btn_exit" type="button" class="btn btn-danger" onclick="leaveEditMode()" style="display:none"><span class="glyphicon glyphicon-remove"></span></button>
       </span>
-    </div><!-- /input-group -->
+    </div>
 
     <div class="btn-group btn-group-sm">
-     <!--<button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button>-->
      <button id="btn_edit" type="button" class="btn btn-default" onclick="enterEditMode()"><span class="glyphicon glyphicon-pencil"></span></button>
     </div>
 
@@ -71,169 +72,31 @@
    </div>
 
   </div>
- </div><!-- /container -->
+ </div>
 
-<!-- Modal -->
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+ <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h3 class="modal-title" id="myModalLabel">Task Overview</h3>
-      </div>
-      <div class="modal-body">
+   <div class="modal-content">
+    <div class="modal-header">
+     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+     <h3 class="modal-title" id="myModalLabel">Task Overview</h3>
+    </div>
+    <div class="modal-body">
+     <table class="table table-bordered">
+      <tr><td>Selected Profile</td><td><b><span id="sel_prof"></span></b></td></tr>
+      <tr><td>Estimated Runtime</td><td><b>5 Minutes</b></td></tr>
+      <tr><td>Estimated Power consumption</td><td><b>0.320 kWh (EUR 0.08)</b></td></tr>
+     </table>
+    </div>
+    <div class="modal-footer">
+     <div class="btn-group" style="width: 100%">
+      <button type="button" class="btn btn-danger" data-dismiss="modal">No, take me back</button>
+      <button type="button" class="btn btn-success" data-dismiss="modal" onclick="runTask()">Yes, start the Run</button>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
 
-      <table class="table table-bordered">
-       <tr><td>Selected Profile</td><td><b><span id="sel_prof"></span></b></td></tr>
-       <tr><td>Estimated Runtime</td><td><b>5 Minutes</b></td></tr>
-       <tr><td>Estimated Power consumption</td><td><b>0.320 kWh (EUR 0.08)</b></td></tr>
-      </table>
-
-      </div>
-      <div class="modal-footer">
-       <div class="btn-group" style="width: 100%">
-        <button type="button" class="btn btn-danger" data-dismiss="modal">No, take me back</button>
-        <button type="button" class="btn btn-success" data-dismiss="modal" onclick="runTask()">Yes, start the Run</button>
-        </div>
-      </div>
-    </div><!-- /.modal-content -->
-  </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
-
-<script>
-
-var state = "IDLE";
-var graph;
-var profiles = [];
-var selected_profile = 0;
-var selected_profile_name = "leadfree";
-
-
-var host = "ws://" + window.location.hostname + ":8080";
-
-
-// Status Socket ////////////////////////////////
-
-var ws_status = new WebSocket(host+"/status");
-
-ws_status.onopen = function()
-{
-    console.log("Status Socket has been opened");
-}
-
-
-// Control Socket ////////////////////////////////
-
-var ws_control = new WebSocket(host+"/control");
-
-ws_control.onopen = function()
-{
-    ws_control.onmessage = function(e)
-    {
-        console.log (e.data);
-    }
-
-    console.log("Control Socket has been opened");
-}
-
-
-// Storage Socket ///////////////////////////////
-
-var ws_storage = new WebSocket(host+"/storage");
-
-ws_storage.onopen = function()
-{
-    console.log("Storage Socket has been opened");
-
-    ws_storage.onmessage = function(e)
-    {
-       console.log('Storage MSG:' + e.data);
-
-       message = JSON.parse(e.data);
-
-       console.log("Parsed message:" + message);
-
-       if(message.resp)
-       {
-         console.log("RESP");
-         if(message.resp == "FAIL")
-         {
-            console.log("FAIL");
-            if (confirm('Overwrite?')) {
-               //message.cmd="PUT";
-               message.force=true;
-               console.log("Sending: " + JSON.stringify(message));
-               ws_storage.send(JSON.stringify(message));
-            } else {
-               //do nothing
-            }
-         }
-         return;
-       }
-       //the message is an array of profiles
-       //FIXME: this should be better, maybe a {"profiles": ...} container?
-       profiles = message;
-        //delete old options in select
-        $('#e2')
-        .find('option')
-        .remove()
-        .end();
-
-        // fill select with new options from websocket
-        for (var i=0; i<profiles.length; i++)
-        {
-                var profile = profiles[i];
-                console.log(profile.name);
-                $('#e2').append('<option value="'+i+'">'+profile.name+'</option>');
-
-                if (profile.name == selected_profile_name)
-                {
-                    console.log('Matchiemazvhie');
-                    selected_profile = i;
-                    $('#e2').select2('val', i);
-                    update_profile(i);
-                }
-
-        }
-
-        graph.render();
-
-    }
-
-    console.log('Requesting stored profiles');
-    ws_storage.send('GET');
-}
-
-
-
-$("#e2").select2({
-  placeholder: "Temperature Curve",
-  allowClear: false
-});
-
-
-$("#e2").on("change", function(e) {
-  update_profile(e.val);
-});
-
-
-
-// Apply the theme
-var highchartsOptions = Highcharts.setOptions(Highcharts.theme);
-
-
-$(function() {
-  Highcharts.setOptions({
-      global: {
-          useUTC: false
-      }
-  });
-
-graph = new Highcharts.Chart(getHCOptions());
-
-
-});
-
-</script>
 </body>
 </html>
