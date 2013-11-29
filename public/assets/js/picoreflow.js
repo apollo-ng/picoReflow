@@ -310,9 +310,9 @@ ws_status.onclose = function()
                       updateProgress(parseFloat(x.runtime)/parseFloat(x.totaltime)*100,eta);
 
                       $('#act_temp').html(parseInt(x.temperature) + ' \xB0C');
-                      $('#power').css("background-color", (x.power > 0.5 ? "rgba(233, 28, 0, 0.84)" : "background: rgba(46, 12, 12, 0.62") );
-                      $('#air').css("background-color", (x.air > 0.5 ? "rgba(240, 199, 67, 0.84)" : "background: rgba(46, 38, 12, 0.62)") );
-                      $('#cool').css("background-color", (x.cool > 0.5 ? "rgba(74, 159, 255, 0.84)" : "background: rgba(12, 28, 46, 0.62)") );
+                      $('#heat').css("background-color", (x.heat > 0.5 ? "rgba(233, 28, 0, 0.84)" : "rgba(46, 12, 12, 0.62") );
+                      $('#air').css("background-color", (x.air > 0.5 ? "rgba(240, 199, 67, 0.84)" : "rgba(46, 38, 12, 0.62)") );
+                      $('#cool').css("background-color", (x.cool > 0.5 ? "rgba(74, 159, 255, 0.84)" : "rgba(12, 28, 46, 0.62)") );
 
 
 

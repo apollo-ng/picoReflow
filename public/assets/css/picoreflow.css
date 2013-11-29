@@ -91,7 +91,9 @@ background: #3F3E3A;
 
 .progress-bar {
     background-color: #75890c;
-    color: #000;
+    font-family: "LCDN";
+    color: #D6FC13;
+    text-shadow: 0 -1px #999999, 1px 0 #999999, 0 1px #999999, -1px 0 #999999;
 }
 
 .btn-success {
