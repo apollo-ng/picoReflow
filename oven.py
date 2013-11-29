@@ -103,11 +103,11 @@ class Oven (threading.Thread):
         if value:
             self.air = 1.0
             if gpio_available:
-                GPIO.output(GPIO_COOL, GPIO.LOW)
+                GPIO.output(GPIO_AIR, GPIO.LOW)
         else:
             self.air = 0.0
             if gpio_available:
-                GPIO.output(GPIO_COOL, GPIO.HIGH)
+                GPIO.output(GPIO_AIR, GPIO.HIGH)
                 
     def get_state(self):
         state = {
