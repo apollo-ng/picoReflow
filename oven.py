@@ -174,7 +174,10 @@ class Profile():
     
     def is_rising(self,time):
         (prev_point,next_point) = self.get_surrounding_points(time)
-        return prev_point[1] < next_point[1]
+        if prev_point and next_point:
+            return prev_point[1] < next_point[1]
+        else:
+            return False
         
     def get_target_temperature(self,time):
         if time > self.get_duration():
