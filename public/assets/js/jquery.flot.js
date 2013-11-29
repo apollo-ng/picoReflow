@@ -624,6 +624,7 @@ Licensed under the MIT license.
         plot.setupGrid = setupGrid;
         plot.draw = draw;
         plot.findNearbyItem = findNearbyItem;
+        plot.processData = processData;
         plot.getPlaceholder = function() { return placeholder; };
         plot.getCanvas = function() { return surface.element; };
         plot.getPlotOffset = function() { return plotOffset; };

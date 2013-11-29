@@ -1,40 +1,7 @@
-/*
-Author: Zach Dwiel
+/* Flot plugin for adding point dragging capabilities to a plot.
+   Author: Zach Dwiel - Heavy inspiration from Chris Leonello.  Thank you!
 
-Flot plugin for adding point dragging capabilities to a plot.
-
-Heavy inspiration from Chris Leonello.  Thank you!
-
-Example usage:
-
-  plot = $.plot(...);
-
-Options:
-
-  // to set the draggable properties of all series:
-  grid, xaxis, yaxis : {
-    draggable: boolean
-  }
-
-  // to set the draggable properties of a single series:
-  // can also be set in the data series rather than the options, see example
-  series : {
-    draggable : boolean,
-    draggablex : boolean,
-    draggabley : boolean
-  }
-
-  // series specifc options over-ride 'global' options
-*/
-
-
-// dependencies: jquery.event.drag.js, we put them inline here to save people
-// the effort of downloading them.
-
-/*
-jquery.event.drag.js ~ v1.5 ~ Copyright (c) 2008, Three Dub Media (http://threedubmedia.com)
-Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-LICENSE.txt
-*/
+// dependencies: jquery.event.drag.js */
 
 (function ($) {
     var options = {
@@ -96,12 +63,8 @@ Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-L
                     var newx = ax.min + (pos.pageX-drag.gridOffset.left)/ax.scale;
                     var newy = ay.max - (pos.pageY-drag.gridOffset.top)/ay.scale;
 
-//                     // this version will change the data itself rather than
-//                     // the points and then reprocess all the data and redraw.
-//                     // NOTE: reuqires exposing plot.processData as a public
-//                     // function in jquery.flot.js
-//                     series[sidx].data[didx] = [newx, newy];
-//                     plot.processData();
+                    series[sidx].data[didx] = [newx, newy];
+                    plot.processData();
 
                     // change the raw data instead of processing every point all over again, not as clean, but faster
                     var points = s.datapoints.points;
@@ -117,22 +80,6 @@ Licensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-L
 
                     var retx = points[didx*ps];
                     var rety = points[didx*ps+1];
-
-                    // uncomment if you are using Jonathan Leto's log plugin
-//                     var yaxisBase = o.yaxis.base;
-//                     var xaxisBase = o.xaxis.base;
-//                     if (s.yaxis == axes.y2axis)
-//                         yaxisBase = o.y2axis.base;
-//                     if (s.xaxis == axes.x2axis)
-//                         xaxisBase = o.x2axis.base;
-//
-//                     if ( yaxisBase > 1 ) {
-//                         rety = Math.exp(newy*Math.LN10);
-//                     }
-//
-//                     if ( xaxisBase > 1 ) {
-//                         retx = Math.exp(newx*Math.LN10);
-//                     }
 
                     plot.getPlaceholder().trigger('plotSeriesChange', [sidx, didx, retx, rety])
                 });

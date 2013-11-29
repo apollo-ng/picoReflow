@@ -1,43 +1,81 @@
 var state = "IDLE";
-var graph;
+var graph = [ 'profile', 'live'];
+var points = [];
 var profiles = [];
 var selected_profile = 0;
 var selected_profile_name = "leadfree";
+
+
 var host = "ws://" + window.location.hostname + ":8080";
 var ws_status = new WebSocket(host+"/status");
 var ws_control = new WebSocket(host+"/control");
 var ws_storage = new WebSocket(host+"/storage");
 
 
-function updateProgress(percentage, eta){
-    if(state=="RUNNING") {
-    if(percentage > 100) percentage = 100;
-    $('#progressBar').css('width', percentage+'%');
-    if(percentage>9) $('#progressBar').html(parseInt(percentage)+'% - '+ eta);
-} else {
-    $('#progressBar').css('width', 0+'%');
-    $('#progressBar').html('');
+graph.profile =
+{
+    label: "Profile",
+    data: [],
+    points: { show: false },
+    color: "#75890c",
+    draggable: false
+};
+
+graph.live =
+{
+    label: "Live",
+    data: [],
+    points: { show: false },
+    color: "#d8d3c5",
+    draggable: false
+};
+
+
+function update_profile(id)
+{
+    selected_profile = id;
+    $('#sel_prof').html(profiles[id].name);
+    graph.profile.data = profiles[id].data;
+    graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
 }
+
+
+function updateProgress(percentage, eta)
+{
+    if(state=="RUNNING")
+    {
+        if(percentage > 100) percentage = 100;
+        $('#progressBar').css('width', percentage+'%');
+        if(percentage>9) $('#progressBar').html(parseInt(percentage)+'% - '+ eta);
+    }
+    else
+    {
+        $('#progressBar').css('width', 0+'%');
+        $('#progressBar').html('');
+    }
 }
 
 
-function runTask() {
-      var test = {
-          "cmd": "RUN",
-          "profile": profiles[selected_profile]
-      }
+function runTask()
+{
+    var test =
+    {
+        "cmd": "RUN",
+        "profile": profiles[selected_profile]
+    }
 
-      //console.log(JSON.stringify(test));
+    graph.live.data = [];
+    graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
 
-     ws_control.send(JSON.stringify(test));
-     graph.series[1].setData([]);
+    ws_control.send(JSON.stringify(test));
+
 }
 
 
-function abortTask() {
-      var test = {"cmd": "STOP"};
-      //console.log(JSON.stringify(test));
-      ws_control.send(JSON.stringify(test));
+function abortTask()
+{
+    var test = {"cmd": "STOP"};
+    ws_control.send(JSON.stringify(test));
 }
 
 
@@ -50,12 +88,12 @@ function enterEditMode() {
     $('#btn_edit').hide();
     $('#btn_exit').show();
     $('#form_profile_name').attr('value', profiles[selected_profile].name);
-    graph.series[0].options.marker.enabled=true;
-    graph.series[0].options.draggableX=true;
-    graph.series[0].options.draggableY=true;
-    graph.render();
 
+    graph.profile.points.show = true;
+    graph.profile.draggable = true;
+    graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
 }
+
 function leaveEditMode() {
     state="IDLE";
     $('#saveas').hide();
@@ -64,24 +102,28 @@ function leaveEditMode() {
     $('#nav_start').show();
     $('#btn_edit').show();
     $('#btn_exit').hide();
-    graph.series[0].options.marker.enabled=false;
-    graph.series[0].options.draggableX=false;
-    graph.series[0].options.draggableY=false;
-    graph.render();
+
+    graph.profile.points.show = false;
+    graph.profile.draggable = false;
+    graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
+
 }
 
-function saveProfile() {
+
+
+
+function saveProfile()
+{
     name = $('#form_profile_name').val();
-    //console.log('Trying to save profile: ' + name);
-    var rawdata = graph.series[0].data;
+    var rawdata = graph.plot.getData()[0].data
     var data = [];
     var last = -1;
 
     for(var i=0; i<rawdata.length;i++)
     {
-        if(rawdata[i].x > last)
+        if(rawdata[i][0] > last)
         {
-          data.push([rawdata[i].x, rawdata[i].y]);
+          data.push([rawdata[i][0], rawdata[i][1]]);
         }
         else
         {
@@ -99,7 +141,7 @@ function saveProfile() {
           return false;
         }
 
-        last = rawdata[i].x;
+        last = rawdata[i][0];
     }
 
     var profile = { "type": "profile", "data": data, "name": name }
@@ -109,8 +151,6 @@ function saveProfile() {
 
     ws_storage.send(put_cmd);
 
-    //console.log('came to this: ' + put_cmd);
-
     selected_profile_name = name;
 
     leaveEditMode();
@@ -118,37 +158,94 @@ function saveProfile() {
 
 
 
-function update_profile(id) {
-  //console.log('Profile selected:' + profiles[id].name);
-  selected_profile = id;
-  $('#sel_prof').html(profiles[id].name);
-  //console.log(graph.series);
-  graph.series[0].setData(profiles[id].data);
+
+
+function getOptions()
+{
+
+  var options =
+  {
+
+    series:
+    {
+      lines: { show: true },
+	  points: { show: true }
+    },
+
+	xaxis:
+    {
+      tickSize: 30,
+      min: 0,
+      tickColor: 'rgba(216, 211, 197, 0.2)',
+      font:
+      {
+        size: 12,
+        lineHeight: 14,
+        weight: "normal",
+        family: "LCDN",
+        variant: "small-caps",
+        color: "rgba(216, 211, 197, 0.85)"
+      }
+	},
+
+	yaxis:
+    {
+  	  tickSize: 25,
+      min: 0,
+	  max: 250,
+      tickDecimals: 0,
+      draggable: false,
+      tickColor: 'rgba(216, 211, 197, 0.2)',
+      font:
+      {
+        size: 12,
+        lineHeight: 14,
+        weight: "normal",
+        family: "LCDN",
+        variant: "small-caps",
+        color: "rgba(216, 211, 197, 0.85)"
+      }
+	},
+
+	grid:
+    {
+	  color: 'rgba(216, 211, 197, 0.55)',
+      borderWidth: 1,
+      labelMargin: 10,
+      mouseActiveRadius: 50
+	},
+
+    legend:
+    {
+      show: false
+    }
+  }
+
+  return options;
+
 }
 
 
 
-
-
-
-
-
-
-
-$(document).ready(function() {
-
-  if(!("WebSocket" in window)){
-  $('#chatLog, input, button, #examples').fadeOut("fast");
-  $('<p>Oh no, you need a browser that supports WebSockets. How about <a href="http://www.google.com/chrome">Google Chrome</a>?</p>').appendTo('#container');
-  }else{
-
-
-// Status Socket ////////////////////////////////
-
-ws_status.onopen = function()
+$(document).ready(function()
 {
-    console.log("Status Socket has been opened");
-         $.bootstrapGrowl("<span class=\"glyphicon glyphicon-exclamation-sign\"></span> <b>Yay</b><br/>I'm alive", {
+
+    if(!("WebSocket" in window))
+    {
+        $('#chatLog, input, button, #examples').fadeOut("fast");
+        $('<p>Oh no, you need a browser that supports WebSockets. How about <a href="http://www.google.com/chrome">Google Chrome</a>?</p>').appendTo('#container');
+    }
+    else
+    {
+
+        // Status Socket ////////////////////////////////
+
+        ws_status.onopen = function()
+        {
+            console.log("Status Socket has been opened");
+
+            $.bootstrapGrowl("<span class=\"glyphicon glyphicon-exclamation-sign\"></span> <b>Yay</b><br/>I'm alive",
+            {
             ele: 'body', // which element to append to
             type: 'success', // (null, 'info', 'error', 'success')
             offset: {from: 'top', amount: 250}, // 'top', or 'bottom'
@@ -157,8 +254,8 @@ ws_status.onopen = function()
             delay: 2500,
             allow_dismiss: true,
             stackup_spacing: 10 // spacing between consecutively stacked growls.
-          });
-};
+            });
+    };
 
 ws_status.onclose = function()
 {
@@ -173,6 +270,62 @@ ws_status.onclose = function()
             stackup_spacing: 10 // spacing between consecutively stacked growls.
           });
 };
+
+
+  eta=0;
+
+
+                  ws_status.onmessage = function(e)
+                  {
+                      x = JSON.parse(e.data);
+
+                      if(state!="EDIT")
+                      {
+                        state = x.state;
+
+                        if(state=="RUNNING")
+                        {
+                          $("#nav_start").hide();
+                          $("#nav_stop").show();
+
+                          graph.live.data.push([x.runtime, x.temperature]);
+                          graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
+
+                          left = parseInt(x.totaltime-x.runtime);
+                          var minutes = Math.floor(left / 60);
+                          var seconds = left - minutes * 60;
+                          eta = minutes+':'+ (seconds < 10 ? "0" : "") + seconds;
+
+                        }
+                        else
+                        {
+                          $("#nav_start").show();
+                          $("#nav_stop").hide();
+                        }
+
+                      }
+
+                      $('#state').html(state);
+
+                      updateProgress(parseFloat(x.runtime)/parseFloat(x.totaltime)*100,eta);
+
+                      $('#act_temp').html(parseInt(x.temperature) + ' \xB0C');
+                      $('#power').css("background-color", (x.power > 0.5 ? "#75890c" : "background: rgba(46, 12, 12, 0.62") );
+                      $('#air').css("background-color", (x.air > 0.5 ? "#75890c" : "background: rgba(46, 38, 12, 0.62)") );
+                      $('#cool').css("background-color", (x.air > 0.5 ? "#75890c" : "background: rgba(12, 28, 46, 0.62)") );
+
+
+
+                      if (x.target == 0)
+                      {
+                          $('#target_temp').html('OFF');
+                      }
+                      else
+                      {
+                        $('#target_temp').html(parseInt(x.target) + ' \xB0C');
+                      }
+                  }
+
 
 
 // Control Socket ////////////////////////////////
@@ -197,20 +350,13 @@ ws_storage.onopen = function()
 
     ws_storage.onmessage = function(e)
     {
-       console.log('Storage MSG:' + e.data);
-
        message = JSON.parse(e.data);
-
-       console.log("Parsed message:" + message);
 
        if(message.resp)
        {
-         console.log("RESP");
          if(message.resp == "FAIL")
          {
-            console.log("FAIL");
             if (confirm('Overwrite?')) {
-               //message.cmd="PUT";
                message.force=true;
                console.log("Sending: " + JSON.stringify(message));
                ws_storage.send(JSON.stringify(message));
@@ -233,20 +379,17 @@ ws_storage.onopen = function()
         for (var i=0; i<profiles.length; i++)
         {
                 var profile = profiles[i];
-                console.log(profile.name);
+                //console.log(profile.name);
                 $('#e2').append('<option value="'+i+'">'+profile.name+'</option>');
 
                 if (profile.name == selected_profile_name)
                 {
-                    console.log('Matchiemazvhie');
                     selected_profile = i;
                     $('#e2').select2('val', i);
                     update_profile(i);
                 }
 
         }
-
-        graph.render();
 
     }
 
@@ -270,6 +413,3 @@ $("#e2").on("change", function(e) {
 
   }
 });
-
-
-
