@@ -1,4 +1,5 @@
 var state = "IDLE";
+var state_last = "";
 var graph = [ 'profile', 'live'];
 var points = [];
 var profiles = [];
@@ -255,11 +256,11 @@ $(document).ready(function()
             allow_dismiss: true,
             stackup_spacing: 10 // spacing between consecutively stacked growls.
             });
-    };
+        };
 
-ws_status.onclose = function()
-{
-         $.bootstrapGrowl("<span class=\"glyphicon glyphicon-exclamation-sign\"></span> <b>ERROR 1:</b><br/>Status Websocket not available", {
+        ws_status.onclose = function()
+        {
+            $.bootstrapGrowl("<span class=\"glyphicon glyphicon-exclamation-sign\"></span> <b>ERROR 1:</b><br/>Status Websocket not available", {
             ele: 'body', // which element to append to
             type: 'error', // (null, 'info', 'error', 'success')
             offset: {from: 'top', amount: 250}, // 'top', or 'bottom'
@@ -269,116 +270,104 @@ ws_status.onclose = function()
             allow_dismiss: true,
             stackup_spacing: 10 // spacing between consecutively stacked growls.
           });
-};
+        };
 
-
-  eta=0;
-
-
-                  ws_status.onmessage = function(e)
-                  {
-                      x = JSON.parse(e.data);
-
-                      if(state!="EDIT")
-                      {
-                        state = x.state;
-
-                        if(state=="RUNNING")
-                        {
-                          $("#nav_start").hide();
-                          $("#nav_stop").show();
-
-                          graph.live.data.push([x.runtime, x.temperature]);
-                          graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
-
-                          left = parseInt(x.totaltime-x.runtime);
-                          var minutes = Math.floor(left / 60);
-                          var seconds = left - minutes * 60;
-                          eta = minutes+':'+ (seconds < 10 ? "0" : "") + seconds;
-
-                          updateProgress(parseFloat(x.runtime)/parseFloat(x.totaltime)*100);
-                          $('#state').html(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100) + '% ' + eta);
-
-                        }
-                        else
-                        {
-                          $("#nav_start").show();
-                          $("#nav_stop").hide();
-                          $('#state').html(state);
-                        }
-
-                      }
-
-
-                      $('#act_temp').html(parseInt(x.temperature) + ' \xB0C');
-                      $('#heat').css("background-color", (x.heat > 0.5 ? "rgba(233, 28, 0, 0.84)" : "rgba(46, 12, 12, 0.62") );
-                      $('#air').css("background-color", (x.air > 0.5 ? "rgba(240, 199, 67, 0.84)" : "rgba(46, 38, 12, 0.62)") );
-                      $('#cool').css("background-color", (x.cool > 0.5 ? "rgba(74, 159, 255, 0.84)" : "rgba(12, 28, 46, 0.62)") );
-
-
-
-                      if (x.target == 0)
-                      {
-                          $('#target_temp').html('OFF');
-                      }
-                      else
-                      {
-                        $('#target_temp').html(parseInt(x.target) + ' \xB0C');
-                      }
-                  }
-
-
-
-// Control Socket ////////////////////////////////
-
-
-ws_control.onopen = function()
-{
-    ws_control.onmessage = function(e)
-    {
-        console.log (e.data);
-    }
-
-    console.log("Control Socket has been opened");
-}
-
-
-// Storage Socket ///////////////////////////////
-
-ws_storage.onopen = function()
-{
-    console.log("Storage Socket has been opened");
-
-    ws_storage.onmessage = function(e)
-    {
-       message = JSON.parse(e.data);
-
-       if(message.resp)
-       {
-         if(message.resp == "FAIL")
-         {
-            if (confirm('Overwrite?')) {
-               message.force=true;
-               console.log("Sending: " + JSON.stringify(message));
-               ws_storage.send(JSON.stringify(message));
-            } else {
-               //do nothing
-            }
-         }
-         return;
-       }
-       //the message is an array of profiles
-       //FIXME: this should be better, maybe a {"profiles": ...} container?
-       profiles = message;
-        //delete old options in select
-        $('#e2')
-        .find('option')
-        .remove()
-        .end();
-
-        // fill select with new options from websocket
-        for (var i=0; i<profiles.length; i++)
+        ws_status.onmessage = function(e)
         {
+            x = JSON.parse(e.data);
+
+            if(state!="EDIT")
+            {
+                state = x.state;
+
+                if(state=="RUNNING")
+                {
+                    $("#nav_start").hide();
+                    $("#nav_stop").show();
+
+                    graph.live.data.push([x.runtime, x.temperature]);
+                    graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
+
+                    left = parseInt(x.totaltime-x.runtime);
+                    var minutes = Math.floor(left / 60);
+                    var seconds = left - minutes * 60;
+                    eta = minutes+':'+ (seconds < 10 ? "0" : "") + seconds;
+
+                    updateProgress(parseFloat(x.runtime)/parseFloat(x.totaltime)*100);
+                    $('#state').html(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100) + '% ' + eta);
+                    $('#target_temp').html(parseInt(x.target) + ' \xB0C');
+
+                }
+                else
+                {
+                    $("#nav_start").show();
+                    $("#nav_stop").hide();
+                    $('#state').html(state);
+                }
+
+                $('#act_temp').html(parseInt(x.temperature) + ' \xB0C');
+                $('#heat').css("background-color", (x.heat > 0.5 ? "rgba(233, 28, 0, 0.84)" : "rgba(46, 12, 12, 0.62") );
+                $('#air').css("background-color", (x.air > 0.5 ? "rgba(240, 199, 67, 0.84)" : "rgba(46, 38, 12, 0.62)") );
+                $('#cool').css("background-color", (x.cool > 0.5 ? "rgba(74, 159, 255, 0.84)" : "rgba(12, 28, 46, 0.62)") );
+
+            }
+        };
+
+
+
+        // Control Socket ////////////////////////////////
+
+
+        ws_control.onopen = function()
+        {
+            ws_control.onmessage = function(e)
+            {
+                console.log (e.data);
+            }
+
+        };
+
+
+        // Storage Socket ///////////////////////////////
+
+        ws_storage.onopen = function()
+        {
+            ws_storage.send('GET');
+        };
+
+
+        ws_storage.onmessage = function(e)
+        {
+            message = JSON.parse(e.data);
+
+            if(message.resp)
+            {
+                if(message.resp == "FAIL")
+                {
+                    if (confirm('Overwrite?'))
+                    {
+                        message.force=true;
+                        console.log("Sending: " + JSON.stringify(message));
+                        ws_storage.send(JSON.stringify(message));
+                    }
+                    else
+                    {
+                        //do nothing
+                    }
+                }
+
+                return;
+            }
+
+            //the message is an array of profiles
+            //FIXME: this should be better, maybe a {"profiles": ...} container?
+            profiles = message;
+            //delete old options in select
+            $('#e2').find('option').remove().end();
+
+            // fill select with new options from websocket
+            for (var i=0; i<profiles.length; i++)
+            {
                 var profile = profiles[i];
                 //console.log(profile.name);
                 $('#e2').append('<option value="'+i+'">'+profile.name+'</option>');
@@ -390,27 +379,21 @@ ws_storage.onopen = function()
                     update_profile(i);
                 }
 
-        }
+            }
 
+        };
+
+
+        $("#e2").select2(
+        {
+            placeholder: "Select Profile",
+            allowClear: false
+        });
+
+
+        $("#e2").on("change", function(e)
+        {
+            update_profile(e.val);
+        });
     }
-
-    console.log('Requesting stored profiles');
-    ws_storage.send('GET');
-}
-
-
-
-$("#e2").select2({
-  placeholder: "Select Profile",
-  allowClear: false
-});
-
-
-$("#e2").on("change", function(e) {
-  update_profile(e.val);
-});
-
-
-
-  }
 });
