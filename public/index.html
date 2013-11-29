@@ -6,17 +6,396 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
  <script src="assets/js/jquery-1.10.2.min.js"></script>
- <script src="assets/js/highcharts.js"></script>
- <script src="assets/js/draggable-points.js"></script>
+ <script src="assets/js/jquery.event.drag-2.2.js"></script>
+ <script src="assets/js/jquery.flot.js"></script>
+ <script src="assets/js/jquery.flot.resize.js"></script>
+ <script src="assets/js/jquery.flot.draggable.js"></script>
  <script src="assets/js/bootstrap.min.js"></script>
  <script src="assets/js/jquery.bootstrap-growl.min.js"></script>
  <script src="assets/js/select2.min.js"></script>
- <script src="assets/js/picoreflow.js"></script>
+
 
  <link rel="stylesheet" href="assets/css/bootstrap.min.css"/>
  <link rel="stylesheet" href="assets/css/bootstrap-theme.min.css"/>
  <link rel="stylesheet" href="assets/css/select2.css"/>
  <link rel="stylesheet" href="assets/css/picoreflow.css"/>
+
+
+	<script type="text/javascript">
+
+var state = "IDLE";
+var graph = [ 'profile', 'live'];
+var points = [];
+var profiles = [];
+var selected_profile = 0;
+var selected_profile_name = "leadfree";
+
+
+var host = "ws://" + window.location.hostname + ":8080";
+var ws_status = new WebSocket(host+"/status");
+var ws_control = new WebSocket(host+"/control");
+var ws_storage = new WebSocket(host+"/storage");
+
+
+graph.profile = {
+            label: "Profile",
+            data: [],
+            points: { show: false },
+            color: "#75890c",
+            draggable: false
+            };
+
+graph.live = {
+            label: "Live",
+            data: [],
+            points: { show: false },
+            color: "#d8d3c5",
+            draggable: false
+             };
+
+
+
+function update_profile(id) {
+  selected_profile = id;
+  $('#sel_prof').html(profiles[id].name);
+  graph.profile.data = profiles[id].data;
+  graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
+}
+
+
+function updateProgress(percentage, eta){
+    if(state=="RUNNING") {
+    if(percentage > 100) percentage = 100;
+    $('#progressBar').css('width', percentage+'%');
+    if(percentage>9) $('#progressBar').html(parseInt(percentage)+'% - '+ eta);
+} else {
+    $('#progressBar').css('width', 0+'%');
+    $('#progressBar').html('');
+}
+}
+
+
+function runTask() {
+      var test = {
+          "cmd": "RUN",
+          "profile": profiles[selected_profile]
+      }
+
+      //console.log(JSON.stringify(test));
+
+     ws_control.send(JSON.stringify(test));
+     graph.series[1].setData([]);
+}
+
+
+function abortTask() {
+      var test = {"cmd": "STOP"};
+      //console.log(JSON.stringify(test));
+      ws_control.send(JSON.stringify(test));
+}
+
+
+function enterEditMode() {
+    state="EDIT"
+    $('#main_status').slideUp();
+    $('#saveas').show();
+    $('#e2').select2('container').hide();
+    $('#nav_start').hide();
+    $('#btn_edit').hide();
+    $('#btn_exit').show();
+    $('#form_profile_name').attr('value', profiles[selected_profile].name);
+
+    graph.profile.points.show = true;
+    graph.profile.draggable = true;
+    graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
+    /*
+    graph.series[0].options.marker.enabled=true;
+    graph.series[0].options.draggableX=true;
+    graph.series[0].options.draggableY=true;
+    graph.render();
+    */
+
+}
+function leaveEditMode() {
+    state="IDLE";
+    $('#saveas').hide();
+    $('#e2').select2('container').show();
+    $('#main_status').slideDown();
+    $('#nav_start').show();
+    $('#btn_edit').show();
+    $('#btn_exit').hide();
+
+    graph.profile.points.show = false;
+    graph.profile.draggable = false;
+    graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
+    /*
+    graph.series[0].options.marker.enabled=false;
+    graph.series[0].options.draggableX=false;
+    graph.series[0].options.draggableY=false;
+    graph.render();
+    */
+}
+
+
+
+
+function saveProfile() {
+    name = $('#form_profile_name').val();
+    //console.log('Trying to save profile: ' + name);
+    var rawdata = graph.series[0].data;
+    var data = [];
+    var last = -1;
+
+    for(var i=0; i<rawdata.length;i++)
+    {
+        if(rawdata[i].x > last)
+        {
+          data.push([rawdata[i].x, rawdata[i].y]);
+        }
+        else
+        {
+          $.bootstrapGrowl("<span class=\"glyphicon glyphicon-exclamation-sign\"></span> <b>ERROR 88:</b><br/>An oven is not a time-machine", {
+            ele: 'body', // which element to append to
+            type: 'alert', // (null, 'info', 'error', 'success')
+            offset: {from: 'top', amount: 250}, // 'top', or 'bottom'
+            align: 'center', // ('left', 'right', or 'center')
+            width: 385, // (integer, or 'auto')
+            delay: 5000,
+            allow_dismiss: true,
+            stackup_spacing: 10 // spacing between consecutively stacked growls.
+          });
+
+          return false;
+        }
+
+        last = rawdata[i].x;
+    }
+
+    var profile = { "type": "profile", "data": data, "name": name }
+    var put = { "cmd": "PUT", "profile": profile }
+
+    var put_cmd = JSON.stringify(put);
+
+    ws_storage.send(put_cmd);
+
+    //console.log('came to this: ' + put_cmd);
+
+    selected_profile_name = name;
+
+    leaveEditMode();
+}
+
+
+
+
+
+function getOptions()
+{
+
+  var options =
+  {
+
+    series:
+    {
+      lines: { show: true },
+	  points: { show: true }
+    },
+
+	xaxis:
+    {
+      tickSize: 30,
+      min: 0,
+      tickColor: 'rgba(216, 211, 197, 0.2)',
+      font:
+      {
+        size: 12,
+        lineHeight: 14,
+        weight: "normal",
+        family: "LCDN",
+        variant: "small-caps",
+        color: "rgba(216, 211, 197, 0.85)"
+      }
+	},
+
+	yaxis:
+    {
+  	  tickSize: 25,
+      min: 0,
+	  max: 250,
+      tickDecimals: 0,
+      draggable: false,
+      tickColor: 'rgba(216, 211, 197, 0.2)',
+      font:
+      {
+        size: 12,
+        lineHeight: 14,
+        weight: "normal",
+        family: "LCDN",
+        variant: "small-caps",
+        color: "rgba(216, 211, 197, 0.85)"
+      }
+	},
+
+	grid:
+    {
+	  color: 'rgba(216, 211, 197, 0.55)',
+      borderWidth: 1,
+      labelMargin: 10,
+      mouseActiveRadius: 50
+	},
+
+    legend:
+    {
+      show: false
+    }
+  }
+
+  return options;
+
+}
+
+
+
+$(document).ready(function() {
+
+  if(!("WebSocket" in window)){
+  $('#chatLog, input, button, #examples').fadeOut("fast");
+  $('<p>Oh no, you need a browser that supports WebSockets. How about <a href="http://www.google.com/chrome">Google Chrome</a>?</p>').appendTo('#container');
+  }else{
+
+
+// Status Socket ////////////////////////////////
+
+ws_status.onopen = function()
+{
+    console.log("Status Socket has been opened");
+         $.bootstrapGrowl("<span class=\"glyphicon glyphicon-exclamation-sign\"></span> <b>Yay</b><br/>I'm alive", {
+            ele: 'body', // which element to append to
+            type: 'success', // (null, 'info', 'error', 'success')
+            offset: {from: 'top', amount: 250}, // 'top', or 'bottom'
+            align: 'center', // ('left', 'right', or 'center')
+            width: 385, // (integer, or 'auto')
+            delay: 2500,
+            allow_dismiss: true,
+            stackup_spacing: 10 // spacing between consecutively stacked growls.
+          });
+};
+
+ws_status.onclose = function()
+{
+         $.bootstrapGrowl("<span class=\"glyphicon glyphicon-exclamation-sign\"></span> <b>ERROR 1:</b><br/>Status Websocket not available", {
+            ele: 'body', // which element to append to
+            type: 'error', // (null, 'info', 'error', 'success')
+            offset: {from: 'top', amount: 250}, // 'top', or 'bottom'
+            align: 'center', // ('left', 'right', or 'center')
+            width: 385, // (integer, or 'auto')
+            delay: 5000,
+            allow_dismiss: true,
+            stackup_spacing: 10 // spacing between consecutively stacked growls.
+          });
+};
+
+
+// Control Socket ////////////////////////////////
+
+
+ws_control.onopen = function()
+{
+    ws_control.onmessage = function(e)
+    {
+        console.log (e.data);
+    }
+
+    console.log("Control Socket has been opened");
+}
+
+
+// Storage Socket ///////////////////////////////
+
+ws_storage.onopen = function()
+{
+    console.log("Storage Socket has been opened");
+
+    ws_storage.onmessage = function(e)
+    {
+       console.log('Storage MSG:' + e.data);
+
+       message = JSON.parse(e.data);
+
+       console.log("Parsed message:" + message);
+
+       if(message.resp)
+       {
+         console.log("RESP");
+         if(message.resp == "FAIL")
+         {
+            console.log("FAIL");
+            if (confirm('Overwrite?')) {
+               //message.cmd="PUT";
+               message.force=true;
+               console.log("Sending: " + JSON.stringify(message));
+               ws_storage.send(JSON.stringify(message));
+            } else {
+               //do nothing
+            }
+         }
+         return;
+       }
+       //the message is an array of profiles
+       //FIXME: this should be better, maybe a {"profiles": ...} container?
+       profiles = message;
+        //delete old options in select
+        $('#e2')
+        .find('option')
+        .remove()
+        .end();
+
+        // fill select with new options from websocket
+        for (var i=0; i<profiles.length; i++)
+        {
+                var profile = profiles[i];
+                console.log(profile.name);
+                $('#e2').append('<option value="'+i+'">'+profile.name+'</option>');
+
+                if (profile.name == selected_profile_name)
+                {
+                    selected_profile = i;
+                    $('#e2').select2('val', i);
+                    update_profile(i);
+                }
+
+        }
+
+        //graph.render();
+
+    }
+
+    console.log('Requesting stored profiles');
+    ws_storage.send('GET');
+}
+
+
+
+$("#e2").select2({
+  placeholder: "Select Profile",
+  allowClear: false
+});
+
+
+$("#e2").on("change", function(e) {
+  update_profile(e.val);
+});
+
+
+
+  }
+});
+
+
+
+
+
+	</script>
 
 </head>
 <body>
@@ -25,8 +404,8 @@
 
   <div id="main_status">
    <div class="pull-left" style="margin: 14px">
-    <span id="act_temp" class="display" style="color: #75890c">25 &deg;C</span>
-    <span id="target_temp" class="display">OFF</span>
+    <span id="act_temp" class="display ds-num" style="color: #75890c">25 &deg;C</span>
+    <span id="target_temp" class="display ds-num">OFF</span>
     <span id="state" class="display" style="font-size: 14px; text-align: center; padding-right:0">Idle</span>
     <span id="power" class="display" style="width: 35px;">&nbsp;</span>
     <span id="cyclic" class="display" style="width: 35px;">&nbsp;</span>
@@ -46,7 +425,14 @@
   <div class="panel panel-default">
    <div class="panel-heading">
 
-    <select id="e2" style="margin-top: 4px"></select>
+
+    <div id="selectp" class="input-group" style="width: 50%">
+      <span class="input-group-addon">Profile Name</span>
+      <select id="e2" class="select2" style="margin-top: 4px"></select>
+      <button id="btn_edit" type="button" class="btn btn-default" onclick="enterEditMode()"><span class="glyphicon glyphicon-pencil"></span></button>
+    </div>
+
+
 
     <div id="saveas" class="input-group" style="display:none;">
       <span class="input-group-addon">Profile Name</span>
@@ -57,9 +443,6 @@
       </span>
     </div>
 
-    <div class="btn-group btn-group-sm">
-     <button id="btn_edit" type="button" class="btn btn-default" onclick="enterEditMode()"><span class="glyphicon glyphicon-pencil"></span></button>
-    </div>
 
    <div class="pull-right" style="margin-top: 3px">
     <button id="nav_start" type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" style="display:none"><span class="glyphicon glyphicon-play"></span> Start</button>
@@ -67,8 +450,9 @@
    </div>
 
    </div>
-   <div class="panel-body" style='padding: 0'>
-    <div id="graph_container" style="height: 400px; margin: 0 auto"></div>
+
+   <div class="panel-body">
+    <div id="graph_container" class="graph"></div>
    </div>
 
   </div>
@@ -97,6 +481,8 @@
    </div>
   </div>
  </div>
+
+
 
 </body>
 </html>
