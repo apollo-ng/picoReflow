@@ -55,6 +55,7 @@ def handle_control():
                     profile_json = json.dumps(profile_obj)
                     profile = Profile(profile_json)
                 oven.run_profile(profile)
+                ovenWatcher.record(profile_json)
             elif msgdict.get("cmd") == "STOP":
                 log.info("Stop command received")
                 oven.abort_run()
@@ -101,7 +102,7 @@ def handle_storage():
 @app.route('/status')
 def handle_status():
     wsock = get_websocket_from_request()
-    ovenWatcher.addObserver(wsock)
+    ovenWatcher.add_observer(wsock)
     log.info("websocket (status) opened")
     while True:
         try:
