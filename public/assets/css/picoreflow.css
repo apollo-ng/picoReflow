@@ -6,6 +6,14 @@
    url('/picoreflow/assets/fonts/LCDN.ttf') format("truetype");
 }
 
+@font-face{
+   font-family: "NoticeStd";
+   src: url('/picoreflow/assets/fonts/noticestd-webfont.eot');
+   src: local("NoticeStd Regular"),
+   url('/picoreflow/assets/fonts/noticestd-webfont.woff') format("woff"),
+   url('/picoreflow/assets/fonts/noticestd-webfont.ttf') format("truetype");
+}
+
 body {
   background: #b9b6af;
 }
@@ -34,6 +42,15 @@ border-color: #000000;
 .ds-num {
   font-family: "LCDN";
   line-height: 38px;
+}
+
+.ds-led {
+  font-family: "NoticeStd";
+  font-size: 28px;
+  font-weight: 400;
+  text-align: center;
+  color: #1F1E1A;
+  padding-right: 1px;
 }
 
 #main_status {
