@@ -40,13 +40,13 @@ function update_profile(id)
 }
 
 
-function updateProgress(percentage, eta)
+function updateProgress(percentage)
 {
     if(state=="RUNNING")
     {
         if(percentage > 100) percentage = 100;
         $('#progressBar').css('width', percentage+'%');
-        if(percentage>9) $('#progressBar').html(parseInt(percentage)+'% - '+ eta);
+        //if(percentage>9) $('#progressBar').html(parseInt(percentage)+'% - '+ eta);
     }
     else
     {
@@ -296,18 +296,19 @@ ws_status.onclose = function()
                           var seconds = left - minutes * 60;
                           eta = minutes+':'+ (seconds < 10 ? "0" : "") + seconds;
 
+                          updateProgress(parseFloat(x.runtime)/parseFloat(x.totaltime)*100);
+                          $('#state').html(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100) + '% ' + eta);
+
                         }
                         else
                         {
                           $("#nav_start").show();
                           $("#nav_stop").hide();
+                          $('#state').html(state);
                         }
 
                       }
 
-                      $('#state').html(state);
-
-                      updateProgress(parseFloat(x.runtime)/parseFloat(x.totaltime)*100,eta);
 
                       $('#act_temp').html(parseInt(x.temperature) + ' \xB0C');
                       $('#heat').css("background-color", (x.heat > 0.5 ? "rgba(233, 28, 0, 0.84)" : "rgba(46, 12, 12, 0.62") );

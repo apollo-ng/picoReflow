@@ -93,7 +93,7 @@ background: #3F3E3A;
     background-color: #75890c;
     font-family: "LCDN";
     color: #D6FC13;
-    text-shadow: 0 -1px #999999, 1px 0 #999999, 0 1px #999999, -1px 0 #999999;
+    text-shadow: 0 -1px #333, 1px 0 #333, 0 1px #333, -1px 0 #333;
 }
 
 .btn-success {
