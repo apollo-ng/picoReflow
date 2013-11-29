@@ -9,6 +9,14 @@ except ImportError:
     log.warning("Could not initialize temperature sensor, using dummy values!")
     sensor_dummy = True
 
+try:
+    import RPi.GPIO as GPIO
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(9, GPIO.OUT)
+except ImportError:
+    log.warning("Could not initialize GPIOs, oven operation will only be simulated!")
+    no_gpio = True
+
 class Oven (threading.Thread):
     STATE_IDLE     = "IDLE"
     STATE_RUNNING  = "RUNNING"
@@ -29,6 +37,8 @@ class Oven (threading.Thread):
         self.target = 0
         self.power = 0.0
         self.state = Oven.STATE_IDLE
+        if not no_gpio:
+            GPIO.output(9, GPIO.LOW)
 
     def run_profile(self, profile):
         log.info("Running profile %s"%profile.name)
@@ -50,8 +60,12 @@ class Oven (threading.Thread):
 
                 if self.temp_sensor.temperature < self.target:
                     self.power = 1.0
+                    if not no_gpio:
+                        GPIO.output(9, GPIO.LOW)
                 else:
                     self.power = 0.0
+                    if not no_gpio:
+                        GPIO.output(9, GPIO.LOW)
                 if self.runtime >= self.totaltime:
                     self.reset()
             time.sleep(0.5)
