@@ -4,8 +4,14 @@ import bottle
 from gevent.pywsgi import WSGIServer
 from geventwebsocket import WebSocketHandler, WebSocketError
 
-log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
-logging.basicConfig(level = logging.INFO, format = log_format)
+try:
+    import config
+except:
+    print "Could not import config file."
+    print "Copy config.pyEXAMPLE to config.py and adapt it for your setup."
+    exit(1)
+
+logging.basicConfig(level = config.log_level, format = config.log_format)
 log = logging.getLogger("picoreflowd")
 log.info("Starting picoreflowd")
 

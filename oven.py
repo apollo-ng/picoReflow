@@ -1,4 +1,5 @@
 import threading,time,random,datetime,logging,json
+import config
 
 log = logging.getLogger(__name__)
 
@@ -9,17 +10,18 @@ except ImportError:
     log.warning("Could not initialize temperature sensor, using dummy values!")
     sensor_available = False
 
-GPIO_HEAT = 11
-GPIO_COOL = 10
-GPIO_AIR = 9
+config.gpio_heat = 11
+config.gpio_cool = 10
+config.gpio_air = 9
 
 try:
     import RPi.GPIO as GPIO
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(GPIO_HEAT, GPIO.OUT)
-    GPIO.setup(GPIO_COOL, GPIO.OUT)
-    GPIO.setup(GPIO_AIR, GPIO.OUT)
     GPIO.setwarnings(False)
+    GPIO.setup(config.gpio_heat, GPIO.OUT)
+    GPIO.setup(config.gpio_cool, GPIO.OUT)
+    GPIO.setup(config.gpio_air, GPIO.OUT)
+
     gpio_available = True
 except ImportError:
     log.warning("Could not initialize GPIOs, oven operation will only be simulated!")
@@ -83,31 +85,31 @@ class Oven (threading.Thread):
         if value:
             self.heat = 1.0
             if gpio_available:
-                GPIO.output(GPIO_HEAT, GPIO.LOW)
+                GPIO.output(config.gpio_heat, GPIO.LOW)
         else:
             self.heat = 0.0
             if gpio_available:
-                GPIO.output(GPIO_HEAT, GPIO.HIGH)
+                GPIO.output(config.gpio_heat, GPIO.HIGH)
     
     def set_cool(self,value):
         if value:
             self.cool = 1.0
             if gpio_available:
-                GPIO.output(GPIO_COOL, GPIO.LOW)
+                GPIO.output(config.gpio_cool, GPIO.LOW)
         else:
             self.cool = 0.0
             if gpio_available:
-                GPIO.output(GPIO_COOL, GPIO.HIGH)
+                GPIO.output(config.gpio_cool, GPIO.HIGH)
     
     def set_air(self,value):
         if value:
             self.air = 1.0
             if gpio_available:
-                GPIO.output(GPIO_AIR, GPIO.LOW)
+                GPIO.output(config.gpio_air, GPIO.LOW)
         else:
             self.air = 0.0
             if gpio_available:
-                GPIO.output(GPIO_AIR, GPIO.HIGH)
+                GPIO.output(config.gpio_air, GPIO.HIGH)
                 
     def get_state(self):
         state = {
@@ -131,11 +133,11 @@ class TempSensor(threading.Thread):
         self.oven = oven
 
         if sensor_available:
-            cs_pin = 27
-            clock_pin = 22
-            data_pin = 17
-            units = "c"
-            self.thermocouple = MAX31855(cs_pin, clock_pin, data_pin, units)
+            self.thermocouple = MAX31855(gpio_sensor_cs, 
+                                         gpio_sensor_clock, 
+                                         gpio_sensor_data, 
+                                         "c"
+                                        )
 
     def run(self):
         while True:
