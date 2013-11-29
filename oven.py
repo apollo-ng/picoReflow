@@ -17,7 +17,9 @@ try:
     import RPi.GPIO as GPIO
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(GPIO_HEAT, GPIO.OUT)
-    GPIO.setup(GPIO_HEAT, GPIO.OUT)
+    GPIO.setup(GPIO_COOL, GPIO.OUT)
+    GPIO.setup(GPIO_AIR, GPIO.OUT)
+    GPIO.setwarnings(False)
     gpio_available = True
 except ImportError:
     log.warning("Could not initialize GPIOs, oven operation will only be simulated!")
