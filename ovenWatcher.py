@@ -34,6 +34,8 @@ class OvenWatcher(threading.Thread):
         self.last_log = []
         self.started = datetime.datetime.now()
         self.recording = True
+        #we just turned on, add first state for nice graph
+        self.last_log.append(self.oven.get_state())
 
     def add_observer(self,observer):
         if self.last_profile:
