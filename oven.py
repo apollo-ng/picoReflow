@@ -17,7 +17,7 @@ try:
     GPIO.setup(config.gpio_heat, GPIO.OUT)
     GPIO.setup(config.gpio_cool, GPIO.OUT)
     GPIO.setup(config.gpio_air, GPIO.OUT)
-    GPIO.setup(config.gpio_door, GPIO.IN)
+    GPIO.setup(config.gpio_door, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
     gpio_available = True
 except ImportError:
