@@ -42,7 +42,7 @@ class Oven (threading.Thread):
         self.runtime = 0
         self.totaltime = 0
         self.target = 0
-        self.door = self.read_door()
+        self.door = self.get_door_state()
         self.state = Oven.STATE_IDLE
         self.set_heat(False)
         self.set_cool(False)
@@ -61,7 +61,7 @@ class Oven (threading.Thread):
 
     def run(self):
         while True:
-            self.door_open = self.read_door()
+            self.door = self.get_door_state()
             
             if self.state == Oven.STATE_RUNNING:
                 self.runtime = (datetime.datetime.now() - self.start_time).total_seconds()
@@ -125,9 +125,9 @@ class Oven (threading.Thread):
         }
         return state
         
-    def read_door(self):
+    def get_door_state(self):
         if gpio_available:
-            return "OPEN" if GPIO.input(gpio_door) else "CLOSED"
+            return "OPEN" if GPIO.input(config.gpio_door) else "CLOSED"
         else:
             return "UNKNOWN"
             
