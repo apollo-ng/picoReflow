@@ -10,10 +10,6 @@ except ImportError:
     log.warning("Could not initialize temperature sensor, using dummy values!")
     sensor_available = False
 
-config.gpio_heat = 11
-config.gpio_cool = 10
-config.gpio_air = 9
-
 try:
     import RPi.GPIO as GPIO
     GPIO.setmode(GPIO.BCM)
@@ -21,6 +17,7 @@ try:
     GPIO.setup(config.gpio_heat, GPIO.OUT)
     GPIO.setup(config.gpio_cool, GPIO.OUT)
     GPIO.setup(config.gpio_air, GPIO.OUT)
+    GPIO.setup(config.gpio_door, GPIO.IN)
 
     gpio_available = True
 except ImportError:
@@ -45,6 +42,7 @@ class Oven (threading.Thread):
         self.runtime = 0
         self.totaltime = 0
         self.target = 0
+        self.door = self.read_door()
         self.state = Oven.STATE_IDLE
         self.set_heat(False)
         self.set_cool(False)
@@ -63,9 +61,11 @@ class Oven (threading.Thread):
 
     def run(self):
         while True:
+            self.door_open = self.read_door()
+            
             if self.state == Oven.STATE_RUNNING:
                 self.runtime = (datetime.datetime.now() - self.start_time).total_seconds()
-                log.info("running at %.1f deg C (Target: %.1f) , heat %.2f, cool %.2f, air %.2f (%.1fs/%.0f)"%(self.temp_sensor.temperature,self.target,self.heat,self.cool,self.air,self.runtime,self.totaltime))
+                log.info("running at %.1f deg C (Target: %.1f) , heat %.2f, cool %.2f, air %.2f, door %s (%.1fs/%.0f)"%(self.temp_sensor.temperature,self.target,self.heat,self.cool,self.air,self.door,self.runtime,self.totaltime))
                 self.target = self.profile.get_target_temperature(self.runtime)
 
                 if self.profile.is_rising(self.runtime):
@@ -120,9 +120,17 @@ class Oven (threading.Thread):
             'heat': self.heat,
             'cool': self.cool,
             'air' : self.air,
-            'totaltime': self.totaltime
+            'totaltime': self.totaltime,
+            'door': self.door
         }
         return state
+        
+    def read_door(self):
+        if gpio_available:
+            return "OPEN" if GPIO.input(gpio_door) else "CLOSED"
+        else:
+            return "UNKNOWN"
+            
 
 class TempSensor(threading.Thread):
     def __init__(self,oven):

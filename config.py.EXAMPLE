@@ -6,6 +6,7 @@ log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
 gpio_heat = 11
 gpio_cool = 10
 gpio_air = 9
+gpio_door = 18
 
 gpio_sensor_cs = 27
 gpio_sensor_clock = 22
