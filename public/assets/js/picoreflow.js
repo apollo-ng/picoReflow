@@ -299,6 +299,20 @@ $(document).ready(function()
             {
                 state = x.state;
 
+                if (x.door == "OPEN")
+                {
+                        $.bootstrapGrowl("<span class=\"glyphicon glyphicon-exclamation-sign\"></span> <b>Door Opened!</b>", {
+                        ele: 'body', // which element to append to
+                        type: 'error', // (null, 'info', 'error', 'success')
+                        offset: {from: 'top', amount: 250}, // 'top', or 'bottom'
+                        align: 'center', // ('left', 'right', or 'center')
+                        width: 385, // (integer, or 'auto')
+                        delay: 0,
+                        allow_dismiss: true,
+                        stackup_spacing: 10 // spacing between consecutively stacked growls.
+                        });
+                }
+
                 if (state!=state_last)
                 {
                     if(state_last == "RUNNING")
