@@ -281,15 +281,22 @@ $(document).ready(function()
                 {
                     selected_profile_name = x.profile.name;
                 }
-                
+
                 $.each(x.log, function(i,v) {
                     graph.live.data.push([v.runtime, v.temperature]);
                     graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
                 });
             }
+
             if(state!="EDIT")
             {
                 state = x.state;
+
+                if (state!=state_last)
+                {
+                   if(state_last == "RUNNING")
+                   updateProgress(0);
+                }
 
                 if(state=="RUNNING")
                 {
@@ -320,6 +327,8 @@ $(document).ready(function()
                 $('#heat').css("background-color", (x.heat > 0.5 ? "rgba(233, 28, 0, 0.84)" : "rgba(46, 12, 12, 0.62") );
                 $('#air').css("background-color", (x.air > 0.5 ? "rgba(240, 199, 67, 0.84)" : "rgba(46, 38, 12, 0.62)") );
                 $('#cool').css("background-color", (x.cool > 0.5 ? "rgba(74, 159, 255, 0.84)" : "rgba(12, 28, 46, 0.62)") );
+
+                state_last = state;
 
             }
         };
