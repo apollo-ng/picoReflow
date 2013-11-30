@@ -11,6 +11,7 @@ class OvenWatcher(threading.Thread):
         self.observers = []
         threading.Thread.__init__(self)
         self.daemon = True
+        self.log_skip_counter = 0
 
         self.oven = oven
         self.start()
@@ -20,10 +21,12 @@ class OvenWatcher(threading.Thread):
             oven_state = self.oven.get_state()
             
             if oven_state.get("state") == Oven.STATE_RUNNING:
-                self.last_log.append(oven_state)
+                if self.log_skip_counter==0:
+                    self.last_log.append(oven_state)
             else:
                 self.recording = False
             self.notify_all(oven_state)
+            self.log_skip_counter = (self.log_skip_counter +1)%20
             time.sleep(0.5)
     
     def record(self, profile):
@@ -33,9 +36,18 @@ class OvenWatcher(threading.Thread):
         self.recording = True
 
     def add_observer(self,observer):
+        if self.last_profile:
+            p = {
+                "name": self.last_profile.name,
+                "data": self.last_profile.data, 
+                "type" : "profile"
+            }
+        else:
+            p = None
+        
         backlog = {
             'type': "backlog",
-            'profile': self.last_profile,
+            'profile': p,
             'log': self.last_log,
             #'started': self.started
         }

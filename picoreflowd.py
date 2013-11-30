@@ -55,7 +55,7 @@ def handle_control():
                     profile_json = json.dumps(profile_obj)
                     profile = Profile(profile_json)
                 oven.run_profile(profile)
-                ovenWatcher.record(profile_json)
+                ovenWatcher.record(profile)
             elif msgdict.get("cmd") == "STOP":
                 log.info("Stop command received")
                 oven.abort_run()

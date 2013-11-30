@@ -181,8 +181,7 @@ function getOptions()
       font:
       {
         size: 12,
-        lineHeight: 14,
-        weight: "normal",
+        lineHeight: 14,        weight: "normal",
         family: "LCDN",
         variant: "small-caps",
         color: "rgba(216, 211, 197, 0.85)"
@@ -276,6 +275,18 @@ $(document).ready(function()
         {
             x = JSON.parse(e.data);
 
+            if (x.type == "backlog")
+            {
+                if (x.profile)
+                {
+                    selected_profile_name = x.profile.name;
+                }
+                
+                $.each(x.log, function(i,v) {
+                    graph.live.data.push([v.runtime, v.temperature]);
+                    graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
+                });
+            }
             if(state!="EDIT")
             {
                 state = x.state;
