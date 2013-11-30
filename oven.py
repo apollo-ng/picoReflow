@@ -133,9 +133,9 @@ class TempSensor(threading.Thread):
         self.oven = oven
 
         if sensor_available:
-            self.thermocouple = MAX31855(gpio_sensor_cs, 
-                                         gpio_sensor_clock, 
-                                         gpio_sensor_data, 
+            self.thermocouple = MAX31855(config.gpio_sensor_cs, 
+                                         config.gpio_sensor_clock, 
+                                         config.gpio_sensor_data, 
                                          "c"
                                         )
 

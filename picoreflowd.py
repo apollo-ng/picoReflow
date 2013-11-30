@@ -8,7 +8,7 @@ try:
     import config
 except:
     print "Could not import config file."
-    print "Copy config.pyEXAMPLE to config.py and adapt it for your setup."
+    print "Copy config.py.EXAMPLE to config.py and adapt it for your setup."
     exit(1)
 
 logging.basicConfig(level = config.log_level, format = config.log_format)
