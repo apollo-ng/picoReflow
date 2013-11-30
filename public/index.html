@@ -28,8 +28,8 @@
   <div id="main_status">
    <div class="pull-left" style="margin: 14px">
     <span id="act_temp" class="display ds-num">25 &deg;C</span>
-    <span id="target_temp" class="display ds-num" style="color: #75890c">OFF</span>
-    <span id="state" class="display ds-num" style="width: 110px; text-align: center; padding-right:0">Idle</span>
+    <span id="target_temp" class="display ds-num" style="color: #75890c">000 &deg;C</span>
+    <span id="state" class="display ds-num" style="width: 120px; text-align: center; padding-right:0">Idle</span>
     <span id="heat" class="display ds-led" style="width: 35px; background: rgba(46, 12, 12, 0.62)">&#110;</span>
     <span id="air" class="display ds-led" style="width: 35px; background: rgba(46, 38, 12, 0.62)">&#116;</span>
     <span id="cool" class="display ds-led" style="width: 35px; background: rgba(12, 28, 46, 0.62)">&#44;</span>
@@ -68,7 +68,7 @@
 
 
    <div class="pull-right" style="margin-top: 3px">
-    <button id="nav_start" type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal" style="display:none"><span class="glyphicon glyphicon-play"></span> Start</button>
+    <button id="nav_start" type="button" class="btn btn-success" data-toggle="modal" data-target="#jobSummaryModal" style="display:none"><span class="glyphicon glyphicon-play"></span> Start</button>
     <button id="nav_stop" type="button" class="btn btn-danger" onclick="abortTask()" style="display:none" ><span class="glyphicon glyphicon-stop"></span> Stop</button>
    </div>
 
@@ -81,18 +81,18 @@
   </div>
  </div>
 
- <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+ <div class="modal fade" id="jobSummaryModal" tabindex="-1" role="dialog" aria-labelledby="jobSummaryModalLabel" aria-hidden="true">
   <div class="modal-dialog">
    <div class="modal-content">
     <div class="modal-header">
      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-     <h3 class="modal-title" id="myModalLabel">Task Overview</h3>
+     <h3 class="modal-title" id="jobSummaryModalLabel">Task Overview</h3>
     </div>
     <div class="modal-body">
      <table class="table table-bordered">
       <tr><td>Selected Profile</td><td><b><span id="sel_prof"></span></b></td></tr>
-      <tr><td>Estimated Runtime</td><td><b>5 Minutes</b></td></tr>
-      <tr><td>Estimated Power consumption</td><td><b>0.320 kWh (EUR 0.08)</b></td></tr>
+      <tr><td>Estimated Runtime</td><td><b><span id="sel_prof_eta"></span></b></td></tr>
+      <tr><td>Estimated Power consumption</td><td><b><span id="sel_prof_cost"></span></b></td></tr>
      </table>
     </div>
     <div class="modal-footer">

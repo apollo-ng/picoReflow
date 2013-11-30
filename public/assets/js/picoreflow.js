@@ -35,7 +35,14 @@ graph.live =
 function update_profile(id)
 {
     selected_profile = id;
+    job_time = parseInt(profiles[id].data[profiles[id].data.length-1][0]);
+    var kwh = (3850*job_time/3600/1000).toFixed(2);
+    var cost =  (kwh*0.26).toFixed(2);
+    var minutes = Math.floor(job_time/60), seconds = job_time-minutes*60;
+    job_time = minutes+':'+ (seconds < 10 ? "0" : "") + seconds;
     $('#sel_prof').html(profiles[id].name);
+    $('#sel_prof_eta').html(job_time);
+    $('#sel_prof_cost').html(kwh + ' kWh (EUR: '+ cost +')');
     graph.profile.data = profiles[id].data;
     graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
 }
@@ -294,8 +301,21 @@ $(document).ready(function()
 
                 if (state!=state_last)
                 {
-                   if(state_last == "RUNNING")
-                   updateProgress(0);
+                    if(state_last == "RUNNING")
+                    {
+                        $('#target_temp').html('---');
+                        updateProgress(0);
+                        $.bootstrapGrowl("<span class=\"glyphicon glyphicon-exclamation-sign\"></span> <b>Run completed</b>", {
+                        ele: 'body', // which element to append to
+                        type: 'success', // (null, 'info', 'error', 'success')
+                        offset: {from: 'top', amount: 250}, // 'top', or 'bottom'
+                        align: 'center', // ('left', 'right', or 'center')
+                        width: 385, // (integer, or 'auto')
+                        delay: 0,
+                        allow_dismiss: true,
+                        stackup_spacing: 10 // spacing between consecutively stacked growls.
+                        });
+                    }
                 }
 
                 if(state=="RUNNING")
@@ -312,7 +332,7 @@ $(document).ready(function()
                     eta = minutes+':'+ (seconds < 10 ? "0" : "") + seconds;
 
                     updateProgress(parseFloat(x.runtime)/parseFloat(x.totaltime)*100);
-                    $('#state').html(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100) + '% ' + eta);
+                    $('#state').html(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100) + '% <span class="glyphicon glyphicon-time" style="font-size: 16px; line-height: 33px"></span> ' + eta);
                     $('#target_temp').html(parseInt(x.target) + ' \xB0C');
 
                 }
