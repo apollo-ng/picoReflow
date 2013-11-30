@@ -117,7 +117,13 @@ function leaveEditMode() {
 
 }
 
+function addNewPoint() {
+    console.log(graph.profile.data);
 
+    graph.profile.data.push([parseInt(graph.profile.data[graph.profile.data.length-1][0])+15, 25]);
+    graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
+    console.log(graph.profile.data);
+}
 
 
 function saveProfile()
