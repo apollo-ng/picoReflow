@@ -67,11 +67,11 @@ function updateProfileTable()
 {
     var html = "";
 
-    for(var i=0; i<profiles[selected_profile].data.length;i++)
+    for(var i=0; i<graph.profile.data.length;i++)
     {
         //console.log(profiles[selected_profile].data[i]);
-        html += '<input type="text" value="'+ profiles[selected_profile].data[i][0] + '" />';
-        html += '<input type="text" value="'+ profiles[selected_profile].data[i][1] + '" /><br />';
+        html += '<input type="text" value="'+ graph.profile.data[i][0] + '" />';
+        html += '<input type="text" value="'+ graph.profile.data[i][1] + '" /><br />';
     }
 
     $('#profile_table').html(html);
@@ -110,6 +110,7 @@ function enterNewMode()
     $('#form_profile_name').attr('placeholder', 'Please enter a name');
     graph.profile.points.show = true;
     graph.profile.draggable = true;
+    graph.profile.data = [];
     graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
     updateProfileTable();
 }
@@ -143,7 +144,15 @@ function leaveEditMode()
 
 function newPoint()
 {
-    graph.profile.data.push([parseInt(graph.profile.data[graph.profile.data.length-1][0])+15, Math.floor((Math.random()*230)+25)]);
+    if(graph.profile.data.length > 0)
+    {
+        var pointx = parseInt(graph.profile.data[graph.profile.data.length-1][0])+15;
+    }
+    else
+    {
+        var pointx = 0;
+    }
+    graph.profile.data.push([pointx, Math.floor((Math.random()*230)+25)]);
     graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
     updateProfileTable();
 }
