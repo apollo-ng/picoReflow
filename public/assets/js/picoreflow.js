@@ -63,10 +63,23 @@ function updateProgress(percentage)
     }
 }
 
+function updateProfileTable()
+{
+    var html = "";
+
+    for(var i=0; i<profiles[selected_profile].data.length;i++)
+    {
+        //console.log(profiles[selected_profile].data[i]);
+        html += '<input type="text" value="'+ profiles[selected_profile].data[i][0] + '" />';
+        html += '<input type="text" value="'+ profiles[selected_profile].data[i][1] + '" /><br />';
+    }
+
+    $('#profile_table').html(html);
+}
 
 function runTask()
 {
-    var test =
+    var cmd =
     {
         "cmd": "RUN",
         "profile": profiles[selected_profile]
@@ -75,56 +88,84 @@ function runTask()
     graph.live.data = [];
     graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
 
-    ws_control.send(JSON.stringify(test));
+    ws_control.send(JSON.stringify(cmd));
 
 }
 
 
 function abortTask()
 {
-    var test = {"cmd": "STOP"};
-    ws_control.send(JSON.stringify(test));
+    var cmd = {"cmd": "STOP"};
+    ws_control.send(JSON.stringify(cmd));
 }
 
-
-function enterEditMode() {
+function enterNewMode()
+{
     state="EDIT"
     $('#main_status').slideUp();
-    $('#saveas').show();
-    $('#e2').select2('container').hide();
-    $('#nav_start').hide();
-    $('#btn_edit').hide();
-    $('#btn_exit').show();
-    $('#form_profile_name').attr('value', profiles[selected_profile].name);
-
+    $('#edit').show();
+    $('#selectp').hide();
+    $('#btn_controls').hide();
+    $('#form_profile_name').attr('value', '');
+    $('#form_profile_name').attr('placeholder', 'Please enter a name');
     graph.profile.points.show = true;
     graph.profile.draggable = true;
     graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
+    updateProfileTable();
 }
 
-function leaveEditMode() {
-    state="IDLE";
-    $('#saveas').hide();
-    $('#e2').select2('container').show();
-    $('#main_status').slideDown();
-    $('#nav_start').show();
-    $('#btn_edit').show();
-    $('#btn_exit').hide();
+function enterEditMode()
+{
+    state="EDIT"
+    $('#main_status').slideUp();
+    $('#edit').show();
+    $('#selectp').hide();
+    $('#btn_controls').hide();
+    $('#form_profile_name').attr('value', profiles[selected_profile].name);
+    graph.profile.points.show = true;
+    graph.profile.draggable = true;
+    graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
+    updateProfileTable();
+}
 
+function leaveEditMode()
+{
+    state="IDLE";
+    $('#edit').hide();
+    $('#selectp').show();
+    $('#btn_controls').show();
+    $('#main_status').slideDown();
+    $('#profile_table').slideUp();
     graph.profile.points.show = false;
     graph.profile.draggable = false;
     graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
-
 }
 
-function addNewPoint() {
-    console.log(graph.profile.data);
-
-    graph.profile.data.push([parseInt(graph.profile.data[graph.profile.data.length-1][0])+15, 25]);
+function newPoint()
+{
+    graph.profile.data.push([parseInt(graph.profile.data[graph.profile.data.length-1][0])+15, Math.floor((Math.random()*230)+25)]);
     graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
-    console.log(graph.profile.data);
+    updateProfileTable();
 }
 
+function delPoint()
+{
+    graph.profile.data.splice(-1,1)
+    graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
+    updateProfileTable();
+}
+
+function toggleTable()
+{
+    if($('#profile_table').css('display') == 'none')
+    {
+        $('#profile_table').slideDown();
+    }
+    else
+    {
+        $('#profile_table').slideUp();
+    }
+}
 
 function saveProfile()
 {

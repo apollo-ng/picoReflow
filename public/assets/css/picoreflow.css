@@ -85,15 +85,17 @@ background: #3F3E3A;
     overflow: hidden;
 }
 
-.btn-group {
-    position: relative;
-}
+
 
 .select2-container {
     position: relative;
     top: -3px;
-    width: 200px;
-    height: 35px;
+    width: 195px;
+    height: 34px;
+}
+
+.select2-container .select2-choice {
+line-height: 32px;
 }
 
 .progress {
@@ -143,9 +145,8 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a4b357', end
 }
 
 .select2-container .select2-choice {
-    height: 30px;
-    margin-top: 4px;
-
+    height: 34px;
+    margin-top: 1px;
 }
 
 .alert {
@@ -191,3 +192,6 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ce3914', end
 	line-height: 1.2em;
 }
 
+td {
+ width: 50%;
+}
