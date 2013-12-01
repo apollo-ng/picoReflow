@@ -32,7 +32,10 @@ class Oven (threading.Thread):
         threading.Thread.__init__(self)
         self.daemon = True
         self.reset()
-        self.temp_sensor = TempSensor(self)
+        if sensor_available:
+            self.temp_sensor = TempSensorReal()
+        else:
+            self.temp_sensor = TempSensorSimulate(self)
         self.temp_sensor.start()
         self.start()
 
@@ -75,7 +78,10 @@ class Oven (threading.Thread):
                     self.set_heat(False)
                     self.set_cool(self.temp_sensor.temperature > self.target)
                 
-                self.set_air(self.temp_sensor.temperature<180)
+                if self.temp_sensor.temperature>200:
+                    self.set_air(False)
+                elif self.temp_sensor.temperature<180:
+                    self.set_air(True)
                 
                 if self.runtime >= self.totaltime:
                     self.reset()
@@ -133,30 +139,75 @@ class Oven (threading.Thread):
             
 
 class TempSensor(threading.Thread):
-    def __init__(self,oven):
+    def __init__(self):
         threading.Thread.__init__(self)
         self.daemon = True
-
         self.temperature = 0
-        self.oven = oven
-
-        if sensor_available:
-            self.thermocouple = MAX31855(config.gpio_sensor_cs, 
-                                         config.gpio_sensor_clock, 
-                                         config.gpio_sensor_data, 
-                                         "c"
-                                        )
-
+        self.time_step = 0.5
+        
+class TempSensorReal(TempSensor):
+    def __init__(self):
+        TempSensor.__init__(self)
+        self.thermocouple = MAX31855(config.gpio_sensor_cs, 
+                                     config.gpio_sensor_clock, 
+                                     config.gpio_sensor_data, 
+                                     "c"
+                                    )
+    
     def run(self):
         while True:
-            if sensor_available:
-                self.temperature = self.thermocouple.get()
+            self.temperature = self.thermocouple.get()
+            time.sleep(self.time_step)
+    
+class TempSensorSimulate(TempSensor):
+    def __init__(self,oven):
+        TempSensor.__init__(self)
+        self.oven = oven
+    
+    def run(self):
+        t_env = 25.0 #deg C
+        c_heat = 100.0 #J/K  heat capacity of heat element
+        c_oven = 2000.0 #J/K heat capacity of oven
+        p_heat = 3500.0 #W   heating power of oven
+        R_o_nocool = 1.0 #K/W  thermal resistance oven -> environment
+        R_o_cool = 0.1 #K/W  thermal resistance oven -> environment
+        R_ho_noair = 0.1 #K/W thermal resistance heat element -> oven
+        R_ho_air = 0.05 #K/W
+        
+        t = t_env #deg C  temp in oven
+        t_h = t #deg C temp of heat element
+        while True:
+            #heating energy
+            Q_h = p_heat * self.time_step * self.oven.heat 
+            
+            #temperature change of heat element by heating
+            t_h += Q_h / c_heat 
+            
+            if self.oven.air:
+                R_ho = R_ho_air
             else:
-                time_delta = (20.0 - self.temperature)/40
-                power_delta = 8.0*self.oven.heat
-                self.temperature += (time_delta+power_delta)
-
-            time.sleep(0.5)
+                R_ho = R_ho_noair
+            
+            #energy flux heat_el -> oven
+            p_ho = (t_h - t) / R_ho
+            
+            #temperature change of oven and heat el
+            t   += p_ho *self.time_step / c_oven
+            t_h -= p_ho *self.time_step / c_heat
+    
+            
+            #energy flux oven -> env
+            if self.oven.cool:
+                p_env = (t - t_env) / R_o_cool
+            else:
+                p_env = (t - t_env) / R_o_nocool
+            
+            #temperature change of oven by cooling to env
+            t -= p_env *self.time_step / c_oven
+            print "-> %dW heater: %.0f -> %dW oven: %.0f -> %dW env"%(int(p_heat * self.oven.heat),t_h,int(p_ho),t,int(p_env))
+            self.temperature = t
+            
+            time.sleep(self.time_step)
 
 class Profile():
     def __init__(self,json_data):
