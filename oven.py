@@ -66,34 +66,34 @@ class Oven (threading.Thread):
     def run(self):
         while True:
             self.door = self.get_door_state()
-            
+
             if self.state == Oven.STATE_RUNNING:
                 self.runtime = (datetime.datetime.now() - self.start_time).total_seconds()
                 log.info("running at %.1f deg C (Target: %.1f) , heat %.2f, cool %.2f, air %.2f, door %s (%.1fs/%.0f)"%(self.temp_sensor.temperature,self.target,self.heat,self.cool,self.air,self.door,self.runtime,self.totaltime))
                 self.target = self.profile.get_target_temperature(self.runtime)
                 pid = self.pid.compute(self.target, self.temp_sensor.temperature)
-                
+
                 log.info("pid: %.3f"%pid)
-                
+
                 self.set_cool(pid <= -1)
                 self.set_heat(pid > 0)
-                
+
                 #if self.profile.is_rising(self.runtime):
                 #    self.set_cool(False)
                 #    self.set_heat(self.temp_sensor.temperature < self.target)
                 #else:
                 #    self.set_heat(False)
                 #    self.set_cool(self.temp_sensor.temperature > self.target)
-                
+
                 if self.temp_sensor.temperature>200:
                     self.set_air(False)
                 elif self.temp_sensor.temperature<180:
                     self.set_air(True)
-                
+
                 if self.runtime >= self.totaltime:
                     self.reset()
             time.sleep(0.5)
-    
+
     def set_heat(self,value):
         if value:
             self.heat = 1.0
@@ -103,7 +103,7 @@ class Oven (threading.Thread):
             self.heat = 0.0
             if gpio_available:
                 GPIO.output(config.gpio_heat, GPIO.HIGH)
-    
+
     def set_cool(self,value):
         if value:
             self.cool = 1.0
@@ -113,7 +113,7 @@ class Oven (threading.Thread):
             self.cool = 0.0
             if gpio_available:
                 GPIO.output(config.gpio_cool, GPIO.HIGH)
-    
+
     def set_air(self,value):
         if value:
             self.air = 1.0
@@ -123,7 +123,7 @@ class Oven (threading.Thread):
             self.air = 0.0
             if gpio_available:
                 GPIO.output(config.gpio_air, GPIO.HIGH)
-                
+
     def get_state(self):
         state = {
             'runtime': self.runtime,
@@ -137,13 +137,13 @@ class Oven (threading.Thread):
             'door': self.door
         }
         return state
-        
+
     def get_door_state(self):
         if gpio_available:
             return "OPEN" if GPIO.input(config.gpio_door) else "CLOSED"
         else:
             return "UNKNOWN"
-            
+
 
 class TempSensor(threading.Thread):
     def __init__(self):
@@ -151,69 +151,69 @@ class TempSensor(threading.Thread):
         self.daemon = True
         self.temperature = 0
         self.time_step = 0.5
-        
+
 class TempSensorReal(TempSensor):
     def __init__(self):
         TempSensor.__init__(self)
-        self.thermocouple = MAX31855(config.gpio_sensor_cs, 
-                                     config.gpio_sensor_clock, 
-                                     config.gpio_sensor_data, 
+        self.thermocouple = MAX31855(config.gpio_sensor_cs,
+                                     config.gpio_sensor_clock,
+                                     config.gpio_sensor_data,
                                      "c"
                                     )
-    
+
     def run(self):
         while True:
             self.temperature = self.thermocouple.get()
             time.sleep(self.time_step)
-    
+
 class TempSensorSimulate(TempSensor):
     def __init__(self,oven):
         TempSensor.__init__(self)
         self.oven = oven
-    
+
     def run(self):
         t_env = 25.0 #deg C
         c_heat = 100.0 #J/K  heat capacity of heat element
         c_oven = 2000.0 #J/K heat capacity of oven
         p_heat = 3500.0 #W   heating power of oven
         R_o_nocool = 1.0 #K/W  thermal resistance oven -> environment
-        R_o_cool = 0.1 #K/W  thermal resistance oven -> environment
+        R_o_cool = 0.05 #K/W  thermal resistance oven -> environment
         R_ho_noair = 0.1 #K/W thermal resistance heat element -> oven
         R_ho_air = 0.05 #K/W
-        
+
         t = t_env #deg C  temp in oven
         t_h = t #deg C temp of heat element
         while True:
             #heating energy
-            Q_h = p_heat * self.time_step * self.oven.heat 
-            
+            Q_h = p_heat * self.time_step * self.oven.heat
+
             #temperature change of heat element by heating
-            t_h += Q_h / c_heat 
-            
+            t_h += Q_h / c_heat
+
             if self.oven.air:
                 R_ho = R_ho_air
             else:
                 R_ho = R_ho_noair
-            
+
             #energy flux heat_el -> oven
             p_ho = (t_h - t) / R_ho
-            
+
             #temperature change of oven and heat el
             t   += p_ho *self.time_step / c_oven
             t_h -= p_ho *self.time_step / c_heat
-    
-            
+
+
             #energy flux oven -> env
             if self.oven.cool:
                 p_env = (t - t_env) / R_o_cool
             else:
                 p_env = (t - t_env) / R_o_nocool
-            
+
             #temperature change of oven by cooling to env
             t -= p_env *self.time_step / c_oven
             print "-> %dW heater: %.0f -> %dW oven: %.0f -> %dW env"%(int(p_heat * self.oven.heat),t_h,int(p_ho),t,int(p_env))
             self.temperature = t
-            
+
             time.sleep(self.time_step)
 
 class Profile():
@@ -224,11 +224,11 @@ class Profile():
 
     def get_duration(self):
         return max([t for (t,x) in self.data])
-    
+
     def get_surrounding_points(self,time):
         if time > self.get_duration():
             return (None,None)
-        
+
         prev_point = None
         next_point = None
 
@@ -237,22 +237,22 @@ class Profile():
                 prev_point = self.data[i-1]
                 next_point = self.data[i]
                 break
-        
+
         return (prev_point,next_point)
-    
+
     def is_rising(self,time):
         (prev_point,next_point) = self.get_surrounding_points(time)
         if prev_point and next_point:
             return prev_point[1] < next_point[1]
         else:
             return False
-        
+
     def get_target_temperature(self,time):
         if time > self.get_duration():
             return 0
 
         (prev_point,next_point) = self.get_surrounding_points(time)
-        
+
         incl = float(next_point[1] - prev_point[1]) / float(next_point[0] - prev_point[0])
         temp = prev_point[1] + (time - prev_point[0]) * incl
         return temp
@@ -265,19 +265,19 @@ class PID():
         self.lastNow = datetime.datetime.now()
         self.iterm = 0
         self.lastErr = 0
-    
+
     def compute(self,setpoint,ispoint):
         now = datetime.datetime.now()
         timeDelta = (now - self.lastNow).total_seconds()
-        
+
         error = float(setpoint - ispoint)
         self.iterm += (error * timeDelta * self.ki)
         self.iterm=sorted([-1,self.iterm,1])[1]
         dErr = (error - self.lastErr) / timeDelta
-        
+
         output = self.kp * error + self.iterm + self.kd * dErr
         output = sorted([-1,output,1])[1]
         self.lastErr = error
         self.lastNow = now
-        
+
         return output
