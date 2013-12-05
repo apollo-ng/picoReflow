@@ -65,14 +65,23 @@ function updateProgress(percentage)
 
 function updateProfileTable()
 {
-    var html = "";
+    var html = '<div class="container"><h3>Profile Points</h3>';
 
     for(var i=0; i<graph.profile.data.length;i++)
     {
-        //console.log(profiles[selected_profile].data[i]);
-        html += '<input type="text" value="'+ graph.profile.data[i][0] + '" />';
-        html += '<input type="text" value="'+ graph.profile.data[i][1] + '" /><br />';
+        html += '<div class="row"><div class="col-md-2"><div class="input-group">';
+        html += '<span class="input-group-addon">' + i + '</span>';
+        html += '<input type="text" class="form-control" value="'+ graph.profile.data[i][0] + '" />';
+        html += '</div></div><div class="col-md-2"><div class="input-group">';
+        html += '<span class="input-group-addon">' + i + '</span>';
+        html += '<input type="text" class="form-control" value="'+ graph.profile.data[i][1] + '" />';
+        html += '</div></div><div class="col-md-2"><div class="input-group">';
+        html += '<span class="input-group-addon">' + i + '</span>';
+        html += '<input type="text" class="form-control" value="degpersec" />';
+        html += '</div></div></div>'
     }
+
+    html += '</div>';
 
     $('#profile_table').html(html);
 }
@@ -104,7 +113,7 @@ function enterNewMode()
     state="EDIT"
     $('#main_status').slideUp();
     $('#edit').show();
-    $('#selectp').hide();
+    $('#profile_selector').hide();
     $('#btn_controls').hide();
     $('#form_profile_name').attr('value', '');
     $('#form_profile_name').attr('placeholder', 'Please enter a name');
@@ -120,7 +129,7 @@ function enterEditMode()
     state="EDIT"
     $('#main_status').slideUp();
     $('#edit').show();
-    $('#selectp').hide();
+    $('#profile_selector').hide();
     $('#btn_controls').hide();
     $('#form_profile_name').attr('value', profiles[selected_profile].name);
     graph.profile.points.show = true;
@@ -133,7 +142,7 @@ function leaveEditMode()
 {
     state="IDLE";
     $('#edit').hide();
-    $('#selectp').show();
+    $('#profile_selector').show();
     $('#btn_controls').show();
     $('#main_status').slideDown();
     $('#profile_table').slideUp();
@@ -488,7 +497,8 @@ $(document).ready(function()
         $("#e2").select2(
         {
             placeholder: "Select Profile",
-            allowClear: false
+            allowClear: false,
+            minimumResultsForSearch: -1
         });
 
 
