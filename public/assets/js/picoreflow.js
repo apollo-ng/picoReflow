@@ -415,8 +415,12 @@ $(document).ready(function()
 
                 $('#act_temp').html(parseInt(x.temperature) + ' \xB0C');
                 $('#heat').css("background-color", (x.heat > 0.5 ? "rgba(233, 28, 0, 0.84)" : "rgba(46, 12, 12, 0.62") );
+                $('#heat').css("box-shadow", (x.heat > 0.5 ? "0 0 5px 0 rgba(233, 28, 0, 0.84), inset 0 0 5px 2px rgba(255,255,255,0.25)" : "0 0 1.1em 0 rgba(0,0,0,0.75)") );
                 $('#air').css("background-color", (x.air > 0.5 ? "rgba(240, 199, 67, 0.84)" : "rgba(46, 38, 12, 0.62)") );
+                $('#air').css("box-shadow", (x.air > 0.5 ? "0 0 5px 0 rgba(240, 199, 67, 0.84), inset 0 0 5px 2px rgba(255,255,255,0.25)" : "0 0 1.1em 0 rgba(0,0,0,0.75)") );
                 $('#cool').css("background-color", (x.cool > 0.5 ? "rgba(74, 159, 255, 0.84)" : "rgba(12, 28, 46, 0.62)") );
+                $('#cool').css("box-shadow", (x.cool > 0.5 ? "0 0 5px 0 rgba(74, 159, 255, 0.84), inset 0 0 5px 2px rgba(255,255,255,0.25)" : "0 0 1.1em 0 rgba(0,0,0,0.75)") );
+
 
                 state_last = state;
 

@@ -45,12 +45,16 @@ body {
 }
 
 .ds-led {
+    margin-top: 1px;
+    padding-top: 1px;
     font-family: "NoticeStd";
     font-size: 28px;
     font-weight: 400;
     text-align: center;
     color: #1F1E1A;
-    padding-right: 1px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
 }
 
 #main_status {
