@@ -50,6 +50,7 @@ class Oven (threading.Thread):
         self.set_heat(False)
         self.set_cool(False)
         self.set_air(False)
+        self.pid = PID(ki=0.1,kd=0.5,kp=0.4)
 
     def run_profile(self, profile):
         log.info("Running profile %s"%profile.name)
@@ -70,13 +71,19 @@ class Oven (threading.Thread):
                 self.runtime = (datetime.datetime.now() - self.start_time).total_seconds()
                 log.info("running at %.1f deg C (Target: %.1f) , heat %.2f, cool %.2f, air %.2f, door %s (%.1fs/%.0f)"%(self.temp_sensor.temperature,self.target,self.heat,self.cool,self.air,self.door,self.runtime,self.totaltime))
                 self.target = self.profile.get_target_temperature(self.runtime)
-
-                if self.profile.is_rising(self.runtime):
-                    self.set_cool(False)
-                    self.set_heat(self.temp_sensor.temperature < self.target)
-                else:
-                    self.set_heat(False)
-                    self.set_cool(self.temp_sensor.temperature > self.target)
+                pid = self.pid.compute(self.target, self.temp_sensor.temperature)
+                
+                log.info("pid: %.3f"%pid)
+                
+                self.set_cool(pid <= -1)
+                self.set_heat(pid > 0)
+                
+                #if self.profile.is_rising(self.runtime):
+                #    self.set_cool(False)
+                #    self.set_heat(self.temp_sensor.temperature < self.target)
+                #else:
+                #    self.set_heat(False)
+                #    self.set_cool(self.temp_sensor.temperature > self.target)
                 
                 if self.temp_sensor.temperature>200:
                     self.set_air(False)
@@ -249,3 +256,28 @@ class Profile():
         incl = float(next_point[1] - prev_point[1]) / float(next_point[0] - prev_point[0])
         temp = prev_point[1] + (time - prev_point[0]) * incl
         return temp
+
+class PID():
+    def __init__(self,ki=1,kp=1,kd=1):
+        self.ki = ki
+        self.kp = kp
+        self.kd = kd
+        self.lastNow = datetime.datetime.now()
+        self.iterm = 0
+        self.lastErr = 0
+    
+    def compute(self,setpoint,ispoint):
+        now = datetime.datetime.now()
+        timeDelta = (now - self.lastNow).total_seconds()
+        
+        error = float(setpoint - ispoint)
+        self.iterm += (error * timeDelta * self.ki)
+        self.iterm=sorted([-1,self.iterm,1])[1]
+        dErr = (error - self.lastErr) / timeDelta
+        
+        output = self.kp * error + self.iterm + self.kd * dErr
+        output = sorted([-1,output,1])[1]
+        self.lastErr = error
+        self.lastNow = now
+        
+        return output
