@@ -111,7 +111,7 @@ function abortTask()
 function enterNewMode()
 {
     state="EDIT"
-    $('#main_status').slideUp();
+    $('#status').slideUp();
     $('#edit').show();
     $('#profile_selector').hide();
     $('#btn_controls').hide();
@@ -127,7 +127,7 @@ function enterNewMode()
 function enterEditMode()
 {
     state="EDIT"
-    $('#main_status').slideUp();
+    $('#status').slideUp();
     $('#edit').show();
     $('#profile_selector').hide();
     $('#btn_controls').hide();
@@ -144,7 +144,7 @@ function leaveEditMode()
     $('#edit').hide();
     $('#profile_selector').show();
     $('#btn_controls').show();
-    $('#main_status').slideDown();
+    $('#status').slideDown();
     $('#profile_table').slideUp();
     graph.profile.points.show = false;
     graph.profile.draggable = false;

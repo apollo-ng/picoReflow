@@ -27,25 +27,28 @@
 
  <div class="container">
 
-  <div id="main_status">
-   <div class="pull-left" style="margin: 14px">
-    <span id="act_temp" class="display ds-num">25 &deg;C</span>
-    <span id="target_temp" class="display ds-num" style="color: #75890c">000 &deg;C</span>
-    <span id="state" class="display ds-num" style="width: 120px; text-align: center; padding-right:0">Idle</span>
-    <span class="display" style="width: 95px; padding-right: 0; text-align: center">
-     <span id="heat" class="ds-led" style="width: 35px; background: rgba(46, 12, 12, 0.62)">&#110;</span>
-     <span id="air" class="ds-led" style="width: 35px; background: rgba(46, 38, 12, 0.62)">&#116;</span>
-     <span id="cool" class="ds-led" style="width: 35px; background: rgba(12, 28, 46, 0.62)">&#44;</span>
-    </span>
-   </div>
-   <div class="clearfix"></div>
-
-   <div class="progress progress-striped active" style="margin: 14px; margin-top: 0">
-    <div id="progressBar" class="progress-bar"  role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
-     <span class="sr-only"></span>
+  <div id="status">
+   <div class="ds-panel">
+    <div class="ds-title"><p>Real</p></div>
+    <div id="act_temp" class="display ds-num">25 &deg;C</div>
+    <div class="ds-title"><p style="color: #75890c">Target</p></div>
+    <div id="target_temp" class="display ds-num" style="color: #75890c">000 &deg;C</div>
+    <div id="state" class="display ds-num" style="width: 150px; text-align: center; padding-right:0">Idle</div>
+    <div class="display">
+     <div style="width: 95px; padding-right: 0; text-align: center">
+      <span id="heat" class="ds-led" style="width: 35px; background: rgba(46, 12, 12, 0.62)">&#110;</span>
+      <span id="air" class="ds-led" style="width: 35px; background: rgba(46, 38, 12, 0.62)">&#116;</span>
+      <span id="cool" class="ds-led" style="width: 35px; background: rgba(12, 28, 46, 0.62)">&#44;</span>
+     </div>
     </div>
    </div>
-
+   <div>
+    <div class="progress progress-striped active">
+     <div id="progressBar" class="progress-bar"  role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+      <span class="sr-only"></span>
+     </div>
+    </div>
+   </div>
   </div>
 
   <div class="panel panel-default">
