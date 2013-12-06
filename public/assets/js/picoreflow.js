@@ -104,6 +104,21 @@ function runTask()
 
 }
 
+function runTaskSimulation()
+{
+    var cmd =
+    {
+        "cmd": "SIMULATE",
+        "profile": profiles[selected_profile]
+    }
+
+    graph.live.data = [];
+    graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
+
+    ws_control.send(JSON.stringify(cmd));
+
+}
+
 
 function abortTask()
 {
@@ -438,13 +453,18 @@ $(document).ready(function()
 
         ws_control.onopen = function()
         {
-            ws_control.onmessage = function(e)
-            {
-                console.log (e.data);
-            }
-
+            
         };
 
+        ws_control.onmessage = function(e)
+        {
+            //Data from Simulation
+            console.log (e.data);
+            x = JSON.parse(e.data);
+            graph.live.data.push([x.runtime, x.temperature]);
+            graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
+
+        }
 
         // Storage Socket ///////////////////////////////
 

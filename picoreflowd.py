@@ -34,6 +34,8 @@ def send_static(filename):
 def get_websocket_from_request():
     env = bottle.request.environ;
     wsock = env.get('wsgi.websocket')
+    print wsock.path
+    print wsock.origin
     if not wsock:
         abort(400, 'Expected WebSocket request.')
     return wsock
@@ -45,7 +47,6 @@ def handle_control():
     while True:
         try:
             message = wsock.receive()
-            wsock.send("Your message was: %r" % message)
             log.info("Received (control): %s"% message)
             msgdict = json.loads(message)
             if msgdict.get("cmd") == "RUN":
@@ -56,6 +57,17 @@ def handle_control():
                     profile = Profile(profile_json)
                 oven.run_profile(profile)
                 ovenWatcher.record(profile)
+            elif msgdict.get("cmd") == "SIMULATE":
+                log.info("SIMULATE command received")
+                profile_obj = msgdict.get('profile')
+                if profile_obj:
+                    profile_json = json.dumps(profile_obj)
+                    profile = Profile(profile_json)
+                simulated_oven = Oven(simulate=True,time_step=0.05)
+                simulation_watcher = OvenWatcher(simulated_oven)
+                simulation_watcher.add_observer(wsock)
+                #simulated_oven.run_profile(profile)
+                #simulation_watcher.record(profile)
             elif msgdict.get("cmd") == "STOP":
                 log.info("Stop command received")
                 oven.abort_run()

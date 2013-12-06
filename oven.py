@@ -28,14 +28,18 @@ class Oven (threading.Thread):
     STATE_IDLE     = "IDLE"
     STATE_RUNNING  = "RUNNING"
 
-    def __init__(self):
+    def __init__(self,simulate = False,time_step=0.5):
         threading.Thread.__init__(self)
         self.daemon = True
+        self.simulate = simulate
+        self.time_step = time_step
         self.reset()
+        if simulate:
+            self.temp_sensor = TempSensorSimulate(self,0.5,self.time_step)
         if sensor_available:
-            self.temp_sensor = TempSensorReal()
+            self.temp_sensor = TempSensorReal(self.time_step)
         else:
-            self.temp_sensor = TempSensorSimulate(self)
+            self.temp_sensor = TempSensorSimulate(self,self.time_step,self.time_step)
         self.temp_sensor.start()
         self.start()
 
@@ -68,7 +72,10 @@ class Oven (threading.Thread):
             self.door = self.get_door_state()
 
             if self.state == Oven.STATE_RUNNING:
-                self.runtime = (datetime.datetime.now() - self.start_time).total_seconds()
+                if self.simulate:
+                    self.runtime += 0.5
+                else:
+                    self.runtime = (datetime.datetime.now() - self.start_time).total_seconds()
                 log.info("running at %.1f deg C (Target: %.1f) , heat %.2f, cool %.2f, air %.2f, door %s (%.1fs/%.0f)"%(self.temp_sensor.temperature,self.target,self.heat,self.cool,self.air,self.door,self.runtime,self.totaltime))
                 self.target = self.profile.get_target_temperature(self.runtime)
                 pid = self.pid.compute(self.target, self.temp_sensor.temperature)
@@ -92,7 +99,9 @@ class Oven (threading.Thread):
 
                 if self.runtime >= self.totaltime:
                     self.reset()
-            time.sleep(0.5)
+
+            time.sleep(self.time_step)
+    
 
     def set_heat(self,value):
         if value:
@@ -146,18 +155,18 @@ class Oven (threading.Thread):
 
 
 class TempSensor(threading.Thread):
-    def __init__(self):
+    def __init__(self,time_step):
         threading.Thread.__init__(self)
         self.daemon = True
         self.temperature = 0
-        self.time_step = 0.5
-
+        self.time_step = time_step
+        
 class TempSensorReal(TempSensor):
-    def __init__(self):
-        TempSensor.__init__(self)
-        self.thermocouple = MAX31855(config.gpio_sensor_cs,
-                                     config.gpio_sensor_clock,
-                                     config.gpio_sensor_data,
+    def __init__(self,time_step):
+        TempSensor.__init__(self,time_step)
+        self.thermocouple = MAX31855(config.gpio_sensor_cs, 
+                                     config.gpio_sensor_clock, 
+                                     config.gpio_sensor_data, 
                                      "c"
                                     )
 
@@ -167,9 +176,10 @@ class TempSensorReal(TempSensor):
             time.sleep(self.time_step)
 
 class TempSensorSimulate(TempSensor):
-    def __init__(self,oven):
-        TempSensor.__init__(self)
+    def __init__(self,oven,time_step,sleep_time):
+        TempSensor.__init__(self,time_step)
         self.oven = oven
+        self.sleep_time = sleep_time
 
     def run(self):
         t_env = 25.0 #deg C
@@ -214,7 +224,7 @@ class TempSensorSimulate(TempSensor):
             print "-> %dW heater: %.0f -> %dW oven: %.0f -> %dW env"%(int(p_heat * self.oven.heat),t_h,int(p_ho),t,int(p_env))
             self.temperature = t
 
-            time.sleep(self.time_step)
+            time.sleep(self.sleep_time)
 
 class Profile():
     def __init__(self,json_data):
