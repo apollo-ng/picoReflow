@@ -77,6 +77,7 @@
                     }
 
                     plot.draw();
+                    updateProfileTable();
 
                     var retx = points[didx*ps];
                     var rety = points[didx*ps+1];

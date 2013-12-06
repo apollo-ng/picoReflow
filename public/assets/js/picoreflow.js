@@ -66,20 +66,22 @@ function updateProgress(percentage)
 
 function updateProfileTable()
 {
-    var html = '<div class="container"><h3>Profile Points</h3>';
+    var html = '<div class="edit-points"><h3>Profile Points</h3>';
+    var dps = 0;
 
     for(var i=0; i<graph.profile.data.length;i++)
     {
-        html += '<div class="row"><div class="col-md-2"><div class="input-group">';
+        html += '<div class="row"><div class="col-xs-4"><div class="input-group">';
         html += '<span class="input-group-addon">' + i + '</span>';
         html += '<input type="text" class="form-control" value="'+ graph.profile.data[i][0] + '" />';
-        html += '</div></div><div class="col-md-2"><div class="input-group">';
-        html += '<span class="input-group-addon">' + i + '</span>';
+        html += '</div></div><div class="col-xs-4">';
         html += '<input type="text" class="form-control" value="'+ graph.profile.data[i][1] + '" />';
-        html += '</div></div><div class="col-md-2"><div class="input-group">';
-        html += '<span class="input-group-addon">' + i + '</span>';
-        html += '<input type="text" class="form-control" value="degpersec" />';
-        html += '</div></div></div>'
+        html += '</div><div class="col-xs-4">';
+
+        if (i>=1) dps = (graph.profile.data[i][1]-graph.profile.data[i-1][1])/(graph.profile.data[i][0]-graph.profile.data[i-1][0]);
+
+        html += '<input type="text" class="form-control" value="' + dps + '" />';
+        html += '</div></div>';
     }
 
     html += '</div>';
