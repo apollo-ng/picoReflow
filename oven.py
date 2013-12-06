@@ -221,7 +221,7 @@ class TempSensorSimulate(TempSensor):
 
             #temperature change of oven by cooling to env
             t -= p_env *self.time_step / c_oven
-            print "-> %dW heater: %.0f -> %dW oven: %.0f -> %dW env"%(int(p_heat * self.oven.heat),t_h,int(p_ho),t,int(p_env))
+            log.debug("energy sim: -> %dW heater: %.0f -> %dW oven: %.0f -> %dW env"%(int(p_heat * self.oven.heat),t_h,int(p_ho),t,int(p_env)))
             self.temperature = t
 
             time.sleep(self.sleep_time)

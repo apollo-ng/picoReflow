@@ -34,8 +34,6 @@ def send_static(filename):
 def get_websocket_from_request():
     env = bottle.request.environ;
     wsock = env.get('wsgi.websocket')
-    print wsock.path
-    print wsock.origin
     if not wsock:
         abort(400, 'Expected WebSocket request.')
     return wsock
@@ -84,7 +82,7 @@ def handle_storage():
             message = wsock.receive()
             if not message:
                 break
-            print message
+            log.debug("websocket (storage) received: %s"%message)
             
             try:
                 msgdict = json.loads(message)
@@ -104,7 +102,8 @@ def handle_storage():
                         msgdict["resp"]="OK"
                     else:
                         msgdict["resp"]="FAIL"
-                    print "sending:" +str(msgdict)
+                    log.debug("websocket (storage) sent: %s"%message)
+
                     wsock.send(json.dumps(msgdict))
                     wsock.send(get_profiles())
         except WebSocketError:
@@ -143,13 +142,12 @@ def save_profile(profile, force=False):
     filename = profile['name']+".json"
     filepath = os.path.join(profile_path,filename)
     if not force and os.path.exists(filepath):
-        print "Didnt write"
+        log.error("Could not write, %s already exists"%filepath)
         return False
     with open(filepath, 'w+') as f:
-        print filepath
         f.write(profile_json)
         f.close()
-    print "Did write"
+    log.info("Wrote %s"%filepath)
     return True
 
 def main():
