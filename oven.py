@@ -54,7 +54,7 @@ class Oven (threading.Thread):
         self.set_heat(False)
         self.set_cool(False)
         self.set_air(False)
-        self.pid = PID(ki=0.1,kd=0.5,kp=0.4)
+        self.pid = PID(ki=config.pid_ki,kd=config.pid_kd,kp=config.pid_kp)
 
     def run_profile(self, profile):
         log.info("Running profile %s"%profile.name)
@@ -182,14 +182,14 @@ class TempSensorSimulate(TempSensor):
         self.sleep_time = sleep_time
 
     def run(self):
-        t_env = 25.0 #deg C
-        c_heat = 100.0 #J/K  heat capacity of heat element
-        c_oven = 2000.0 #J/K heat capacity of oven
-        p_heat = 3500.0 #W   heating power of oven
-        R_o_nocool = 1.0 #K/W  thermal resistance oven -> environment
-        R_o_cool = 0.05 #K/W  thermal resistance oven -> environment
-        R_ho_noair = 0.1 #K/W thermal resistance heat element -> oven
-        R_ho_air = 0.05 #K/W
+        t_env      = config.sim_t_env
+        c_heat     = config.sim_c_heat
+        c_oven     = config.sim_c_oven
+        p_heat     = config.sim_p_heat
+        R_o_nocool = config.sim_R_o_nocool
+        R_o_cool   = config.sim_R_o_cool
+        R_ho_noair = config.sim_R_ho_noair
+        R_ho_air = config.sim_R_ho_air
 
         t = t_env #deg C  temp in oven
         t_h = t #deg C temp of heat element

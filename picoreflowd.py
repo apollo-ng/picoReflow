@@ -153,8 +153,8 @@ def save_profile(profile, force=False):
     return True
 
 def main():
-    ip = "0.0.0.0"
-    port = 8080
+    ip = config.listening_ip
+    port = config.listening_port
     log.info("listening to %s:%d"%(ip,port))
     
     server = WSGIServer((ip,port), app,
