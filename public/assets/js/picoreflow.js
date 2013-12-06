@@ -12,6 +12,7 @@ var ws_status = new WebSocket(host+"/status");
 var ws_control = new WebSocket(host+"/control");
 var ws_storage = new WebSocket(host+"/storage");
 
+if(window.webkitRequestAnimationFrame) window.requestAnimationFrame = window.webkitRequestAnimationFrame;
 
 graph.profile =
 {
@@ -402,8 +403,9 @@ $(document).ready(function()
                     eta = minutes+':'+ (seconds < 10 ? "0" : "") + seconds;
 
                     updateProgress(parseFloat(x.runtime)/parseFloat(x.totaltime)*100);
-                    $('#state').html(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100) + '% <span class="glyphicon glyphicon-time" style="font-size: 16px; line-height: 33px"></span> ' + eta);
-                    $('#target_temp').html(parseInt(x.target) + ' \xB0C');
+                    $('#state_prg').html(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100) + '%');
+                    $('#state_eta').html(eta);
+                    $('#target_temp').html(parseInt(x.target));
 
                 }
                 else
@@ -413,7 +415,7 @@ $(document).ready(function()
                     $('#state').html(state);
                 }
 
-                $('#act_temp').html(parseInt(x.temperature) + ' \xB0C');
+                $('#act_temp').html(parseInt(x.temperature));
                 $('#heat').css("background-color", (x.heat > 0.5 ? "rgba(233, 28, 0, 0.84)" : "rgba(46, 12, 12, 0.62") );
                 $('#heat').css("box-shadow", (x.heat > 0.5 ? "0 0 5px 0 rgba(233, 28, 0, 0.84), inset 0 0 5px 2px rgba(255,255,255,0.25)" : "0 0 1.1em 0 rgba(0,0,0,0.75)") );
                 $('#air').css("background-color", (x.air > 0.5 ? "rgba(240, 199, 67, 0.84)" : "rgba(46, 38, 12, 0.62)") );

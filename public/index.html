@@ -28,18 +28,21 @@
  <div class="container">
 
   <div id="status">
+   <div class="ds-title-panel">
+    <div class="ds-title">Real Temp</div>
+    <div class="ds-title" style="width: 95px">Target Temp</div>
+    <div class="ds-title" style="width: 70px">Progress</div>
+    <div class="ds-title">ETA</div>
+   </div>
    <div class="ds-panel">
-    <div class="ds-title"><p>Real</p></div>
-    <div id="act_temp" class="display ds-num">25 &deg;C</div>
-    <div class="ds-title"><p style="color: #75890c">Target</p></div>
-    <div id="target_temp" class="display ds-num" style="color: #75890c">000 &deg;C</div>
-    <div id="state" class="display ds-num" style="width: 150px; text-align: center; padding-right:0">Idle</div>
-    <div class="display">
-     <div style="width: 95px; padding-right: 0; text-align: center">
+    <div class="display ds-num"><span id="act_temp">25</span><span class="ds-unit">&deg;C</span></div>
+    <div class="display ds-num" style="color: #75890c; width: 95px"><span id="target_temp">---</span><span class="ds-unit">&deg;C</span></div>
+    <div id="state_prg" class="display ds-num" style="width: 70px">---</div>
+    <div id="state_eta" class="display ds-num">--:--</div>
+    <div class="display pull-right" style="width: 115px; padding-right: 0; text-align: center">
       <span id="heat" class="ds-led" style="width: 35px; background: rgba(46, 12, 12, 0.62)">&#110;</span>
       <span id="air" class="ds-led" style="width: 35px; background: rgba(46, 38, 12, 0.62)">&#116;</span>
       <span id="cool" class="ds-led" style="width: 35px; background: rgba(12, 28, 46, 0.62)">&#44;</span>
-     </div>
     </div>
    </div>
    <div>
@@ -83,21 +86,18 @@
      </div>
      <div class="btn-group btn-group-sm" style="margin-top: 10px">
       <button id="btn_table" type="button" class="btn btn-default" onclick="toggleTable()"><span class="glyphicon glyphicon-list"></span></button>
+      <button id="btn_live" type="button" class="btn btn-default" onclick="toggleLive()"><span class="glyphicon glyphicon-eye-open"></span></button>
      </div>
      <div class="btn-group btn-group-sm" style="margin-top: 10px">
-      <button id="btn_table" type="button" class="btn btn-danger" onclick="toggleTable()"><span class="glyphicon glyphicon-trash"></span></button>
+      <button id="btn_delProfile" type="button" class="btn btn-danger" onclick="toggleTable()"><span class="glyphicon glyphicon-trash"></span></button>
      </div>
     </div>
-
-
    </div>
 
    <div class="panel-body">
     <div id="graph_container" class="graph"></div>
    </div>
-
-   <div id="profile_table" class="panel-footer" style="display:none;">
-   </div>
+   <div id="profile_table" class="panel-footer" style="display:none;"></div>
 
   </div>
  </div>
