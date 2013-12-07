@@ -84,7 +84,7 @@ function updateProfileTable()
         html += '<td><input type="text" class="form-control" id="profiletable-0-'+i+'" value="'+ graph.profile.data[i][0] + '" style="width: 60px" /></td>';
         html += '<td><input type="text" class="form-control" id="profiletable-1-'+i+'" value="'+ graph.profile.data[i][1] + '" style="width: 60px" /></td>';
         html += '<td><div class="input-group"><span class="glyphicon glyphicon-arrow-' + slope +
-                ' input-group-addon" style="top: 0; text-shadow: 1px 1px 0 rgba(255, 255, 255, 1), -1px -1px 0 rgba(0, 0, 0, 1); font-weight: bold; color: '+color[0]+'; background: '+color[1]+'"></span><input type="text" class="form-control ds-input" value="' + dps + '" style="width: 50px" /></div></td>';
+                ' input-group-addon" style="top: 0; text-shadow: 1px 1px 0 rgba(255, 255, 255, 1), -1px -1px 0 rgba(0, 0, 0, 1); font-weight: bold; color: '+color[0]+'; background: '+color[1]+'"></span><input type="text" class="form-control ds-input" readonly value="' + dps + '" style="width: 50px" /></div></td>';
         html += '<td>&nbsp;</td></tr>';
     }
 
