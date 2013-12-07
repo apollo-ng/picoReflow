@@ -66,25 +66,29 @@ function updateProgress(percentage)
 
 function updateProfileTable()
 {
-    var html = '<div class="edit-points"><h3>Profile Points</h3>';
     var dps = 0;
+    var slope = "";
+    var color = [];
+
+    var html = '<h3>Profile Points</h3><div class="table-responsive" style="scroll: none"><table class="table table-striped">';
+        html += '<tr><th style="width: 50px">#</th><th>Target Time</th><th>Target Temperature</th><th>Slope in &deg;C/s</th><th></th></tr>';
 
     for(var i=0; i<graph.profile.data.length;i++)
     {
-        html += '<div class="row"><div class="col-xs-4"><div class="input-group">';
-        html += '<span class="input-group-addon">' + i + '</span>';
-        html += '<input type="text" class="form-control" value="'+ graph.profile.data[i][0] + '" />';
-        html += '</div></div><div class="col-xs-4">';
-        html += '<input type="text" class="form-control" value="'+ graph.profile.data[i][1] + '" />';
-        html += '</div><div class="col-xs-4">';
+        if (i>=1) dps = Math.round( (graph.profile.data[i][1]-graph.profile.data[i-1][1])/(graph.profile.data[i][0]-graph.profile.data[i-1][0]) * 10) / 10;
+        if (dps  > 0) { slope = "up";     color[0]="red";  color[1]="rgba(233, 28, 0, 0.54)"; } else
+        if (dps  < 0) { slope = "down";   color[0]="blue";  color[1]="rgba(74, 159, 255, 0.54)"; dps *= -1; } else
+        if (dps == 0) { slope = "right";  color[0]="white";  color[1]="grey"; }
 
-        if (i>=1) dps = (graph.profile.data[i][1]-graph.profile.data[i-1][1])/(graph.profile.data[i][0]-graph.profile.data[i-1][0]);
-
-        html += '<input type="text" class="form-control" value="' + dps + '" />';
-        html += '</div></div>';
+        html += '<tr><td><h4>' + i + '</h4></td>';
+        html += '<td><input type="text" class="form-control" value="'+ graph.profile.data[i][0] + '" style="width: 60px" /></td>';
+        html += '<td><input type="text" class="form-control" value="'+ graph.profile.data[i][1] + '" style="width: 60px" /></td>';
+        html += '<td><div class="input-group"><span class="glyphicon glyphicon-arrow-' + slope +
+                ' input-group-addon" style="top: 0; text-shadow: 1px 1px 0 rgba(255, 255, 255, 1), -1px -1px 0 rgba(0, 0, 0, 1); font-weight: bold; color: '+color[0]+'; background: '+color[1]+'"></span><input type="text" class="form-control ds-input" value="' + dps + '" style="width: 50px" /></div></td>';
+        html += '<td>&nbsp;</td></tr>';
     }
 
-    html += '</div>';
+    html += '</table></div>';
 
     $('#profile_table').html(html);
 }
@@ -453,7 +457,7 @@ $(document).ready(function()
 
         ws_control.onopen = function()
         {
-            
+
         };
 
         ws_control.onmessage = function(e)
