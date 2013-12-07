@@ -162,6 +162,8 @@ function enterEditMode()
 
 function leaveEditMode()
 {
+    selected_profile_name = $('#form_profile_name').val();
+    ws_storage.send('GET');
     state="IDLE";
     $('#edit').hide();
     $('#profile_selector').show();
@@ -245,8 +247,6 @@ function saveProfile()
     var put_cmd = JSON.stringify(put);
 
     ws_storage.send(put_cmd);
-
-    selected_profile_name = name;
 
     leaveEditMode();
 }
