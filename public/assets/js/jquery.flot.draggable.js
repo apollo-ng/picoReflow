@@ -77,6 +77,8 @@
                     }
 
                     plot.draw();
+
+                    // hack to update the profile points after dragging graph in edit mode
                     updateProfileTable();
 
                     var retx = points[didx*ps];
