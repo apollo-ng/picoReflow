@@ -60,8 +60,9 @@
                     if (drag.item.series.xaxis == ax2)
                         ax = ax2;
 
-                    var newx = ax.min + (pos.pageX-drag.gridOffset.left)/ax.scale;
-                    var newy = ay.max - (pos.pageY-drag.gridOffset.top)/ay.scale;
+                    // Bring down to int
+                    var newx = Math.floor(ax.min + (pos.pageX-drag.gridOffset.left)/ax.scale);
+                    var newy = Math.floor(ay.max - (pos.pageY-drag.gridOffset.top)/ay.scale);
 
                     series[sidx].data[didx] = [newx, newy];
                     plot.processData();
