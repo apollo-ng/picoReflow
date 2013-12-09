@@ -52,6 +52,7 @@ function deleteProfile()
 {
     console.log("Delete profile:" + selected_profile_name);
     // FIXME: Add cmd for socket communication to delete stored profile
+    leaveEditMode();
 }
 
 
@@ -61,7 +62,7 @@ function updateProgress(percentage)
     {
         if(percentage > 100) percentage = 100;
         $('#progressBar').css('width', percentage+'%');
-        //if(percentage>9) $('#progressBar').html(parseInt(percentage)+'% - '+ eta);
+        if(percentage>5) $('#progressBar').html(parseInt(percentage)+'%');
     }
     else
     {
@@ -86,7 +87,7 @@ function updateProfileTable()
         if (dps  < 0) { slope = "down";   color="rgba(23, 108, 204, 1)"; dps *= -1; } else
         if (dps == 0) { slope = "right";  color="grey"; }
 
-        html += '<tr><td><h4>' + i + '</h4></td>';
+        html += '<tr><td><h4>' + (i+1) + '</h4></td>';
         html += '<td><input type="text" class="form-control" id="profiletable-0-'+i+'" value="'+ graph.profile.data[i][0] + '" style="width: 60px" /></td>';
         html += '<td><input type="text" class="form-control" id="profiletable-1-'+i+'" value="'+ graph.profile.data[i][1] + '" style="width: 60px" /></td>';
         html += '<td><div class="input-group"><span class="glyphicon glyphicon-circle-arrow-' + slope +
@@ -444,7 +445,6 @@ $(document).ready(function()
                     eta = minutes+':'+ (seconds < 10 ? "0" : "") + seconds;
 
                     updateProgress(parseFloat(x.runtime)/parseFloat(x.totaltime)*100);
-                    $('#progressBar').html(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100) + '%');
                     $('#state').html(eta);
                     $('#target_temp').html(parseInt(x.target));
 
@@ -453,14 +453,14 @@ $(document).ready(function()
                 {
                     $("#nav_start").show();
                     $("#nav_stop").hide();
-                    $('#state').html(state);
+                    $('#state').html('<p class="ds-text">'+state+'</p>');
                 }
 
                 $('#act_temp').html(parseInt(x.temperature));
                 $('#hazard').css("color", (x.temperature > 45 ? "rgb(255, 204, 0)" : "rgba(12, 12, 12, 0.62") );
                 $('#heat').css("color", (x.heat > 0.5 ? "rgba(233, 28, 0, 0.84)" : "rgba(46, 12, 12, 0.62") );
                 //$('#heat').css("text-shadow", (x.heat > 0.5 ? "0 0 5px rgba(233, 28, 0, 0.84), inset 0 0 5px 2px rgba(255,255,255,0.25)" : "0 0 1.1em rgba(0,0,0,0.75)") );
-                $('#air').css("color", (x.air > 0.5 ? "rgba(255, 255, 255, 0.84)" : "rgba(46, 38, 12, 0.62)") );
+                $('#air').css("color", (x.air > 0.5 ? "rgba(216, 211, 197, 1)" : "rgba(55, 55, 55, 0.62)") );
                 //$('#air').css("text-shadow", (x.air > 0.5 ? "0 0 5px rgba(240, 199, 67, 0.84), inset 0 0 5px 2px rgba(255,255,255,0.25)" : "0 0 1.1em rgba(0,0,0,0.75)") );
                 $('#cool').css("color", (x.cool > 0.5 ? "rgba(74, 159, 255, 0.84)" : "rgba(12, 28, 46, 0.62)") );
                 //$('#cool').css("text-shadow", (x.cool > 0.5 ? "0 0 5px rgba(74, 159, 255, 0.84), inset 0 0 5px 2px rgba(255,255,255,0.25)" : "0 0 1.1em rgba(0,0,0,0.75)") );

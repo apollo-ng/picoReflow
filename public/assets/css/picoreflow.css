@@ -26,7 +26,7 @@ body {
     -moz-border-radius: 7px;
     border-radius: 7px;
     border: 1px solid #ddd;
-    height: 86px;
+    height: 81px;
     -moz-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.55);
     -webkit-box-shadow: 0 0 1.5em 0 rgba(0,0,0,0.55);
     box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.55);
@@ -38,8 +38,8 @@ body {
     padding-right: 5px;
     font-size: 40px;
     font-weight: normal;
-    height: 45px;
-    line-height: 45px;
+    height: 40px;
+    line-height: 40px;
     vertical-align: middle;
     color: #d8d3c5;
     border-color: #000000;
@@ -74,7 +74,7 @@ body {
     font-size: 10px;
     height: 18px;
     line-height: 18px;
-    width: 105px;
+    width: 100px;
     border-right: 1px solid #b9b6af;
     vertical-align: top;
     text-align: center;
@@ -83,7 +83,7 @@ body {
 }
 
 .ds-num {
-    width: 105px;
+    width: 100px;
     font-family: "Digi";
     border-right: 1px solid #b9b6af;
     white-space: nowrap;
@@ -109,16 +109,16 @@ body {
     font-family: "Arial";
     font-size: 22px;
     vertical-align: top;
-    line-height: 35px;
+    line-height: 32px;
     margin-left: 4px;
 }
 
 .ds-led {
-    margin: 0;
+    margin: -5px;
     font-family: "Tables";
     font-size: 38px;
     color: #1F1E1A;
-    text-shadow: 2px 2px 5px #000, -2px -2px 5px #000;
+    text-shadow: 0 0 5px #000, 0 0 5px #000;
 }
 
 .ds-trend {
@@ -137,6 +137,10 @@ body {
     width: initial;
 }
 
+.ds-text {
+    font-family: sans-serif;
+    font-size: 32px;
+}
 
 .progress {
     -webkit-border-radius: 0;
@@ -153,9 +157,8 @@ body {
 
 .progress-bar {
     background-color: #75890c;
-    font-family: "LCDN";
-    color: #D6FC13;
-    text-shadow: 0 -1px #333, 1px 0 #333, 0 1px #333, -1px 0 #333;
+    font-family: "Digi";
+    font-size: 16px;
 }
 
 
