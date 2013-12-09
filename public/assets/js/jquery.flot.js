@@ -2802,10 +2802,6 @@ Licensed under the MIT license.
                 smallestDistance = maxDistance * maxDistance + 1,
                 item = null, foundPoint = false, i, j, ps;
 
-                console.log('max dist:' + maxDistance);
-
-
-
             for (i = series.length - 1; i >= 0; --i) {
                 if (!seriesFilter(series[i]))
                     continue;

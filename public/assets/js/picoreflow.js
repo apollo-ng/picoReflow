@@ -6,7 +6,6 @@ var profiles = [];
 var selected_profile = 0;
 var selected_profile_name = "leadfree";
 
-
 var host = "ws://" + window.location.hostname + ":8080";
 var ws_status = new WebSocket(host+"/status");
 var ws_control = new WebSocket(host+"/control");
@@ -284,13 +283,25 @@ function getOptions()
 
     series:
     {
-      lines: { show: true },
-	  points: { show: true }
+        lines:
+        {
+            show: true
+        },
+
+        points:
+        {
+            show: true,
+            radius: 5,
+            symbol: "circle"
+        },
+
+        shadowSize: 3
+
     },
 
 	xaxis:
     {
-      tickSize: 30,
+      //tickSize: 30,
       min: 0,
       tickColor: 'rgba(216, 211, 197, 0.2)',
       font:

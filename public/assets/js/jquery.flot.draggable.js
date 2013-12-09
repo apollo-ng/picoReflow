@@ -77,6 +77,20 @@
                       points[didx*ps+1] = newy;
                     }
 
+
+
+                    // funny hack to make drag resizing usable
+                    if (newx > ax.max)
+                    {
+                        graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
+                    }
+                    else if (newx < (ax.max*0.8))
+                    {
+                        console.log('baba');
+                        ax.max = ax.max*0.9;
+                        //ax2.max = ax2.max*0.9;
+                    }
+
                     plot.draw();
 
                     // hack to update the profile points after dragging graph in edit mode
