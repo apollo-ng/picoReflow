@@ -83,12 +83,12 @@ def handle_storage():
             if not message:
                 break
             log.debug("websocket (storage) received: %s"%message)
-            
+
             try:
                 msgdict = json.loads(message)
             except:
                 msgdict = {}
-            
+
             if message == "GET":
                 log.info("GET command recived")
                 wsock.send(get_profiles())
@@ -129,7 +129,7 @@ profile_path = os.path.join(script_dir,"storage","profiles")
 def get_profiles():
     try :
         profile_files = os.listdir(profile_path)
-    except : 
+    except :
         profile_files = []
     profiles = []
     for filename in profile_files:
@@ -153,8 +153,8 @@ def save_profile(profile, force=False):
 def main():
     ip = config.listening_ip
     port = config.listening_port
-    log.info("listening to %s:%d"%(ip,port))
-    
+    log.info("listening on %s:%d"%(ip,port))
+
     server = WSGIServer((ip,port), app,
                     handler_class=WebSocketHandler)
     server.serve_forever()

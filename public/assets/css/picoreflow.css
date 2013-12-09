@@ -1,12 +1,4 @@
 @font-face{
-    font-family: "LCDN";
-    src: url('/picoreflow/assets/fonts/LCDN.eot');
-    src: local("LCD Normal"),
-    url('/picoreflow/assets/fonts/LCDN.woff') format("woff"),
-    url('/picoreflow/assets/fonts/LCDN.ttf') format("truetype");
-}
-
-@font-face{
     font-family: "Digi";
     src: url('/picoreflow/assets/fonts/digital-7-webfont.eot');
     src: local("Digital 7"),
@@ -15,11 +7,11 @@
 }
 
 @font-face{
-    font-family: "NoticeStd";
-    src: url('/picoreflow/assets/fonts/noticestd-webfont.eot');
-    src: local("NoticeStd Regular"),
-    url('/picoreflow/assets/fonts/noticestd-webfont.woff') format("woff"),
-    url('/picoreflow/assets/fonts/noticestd-webfont.ttf') format("truetype");
+    font-family: "Tables";
+    src: url('/picoreflow/assets/fonts/tables.eot');
+    src: local("Tables"),
+    url('/picoreflow/assets/fonts/tables.woff') format("woff"),
+    url('/picoreflow/assets/fonts/tables.ttf') format("truetype");
 }
 
 body {
@@ -48,7 +40,6 @@ body {
     font-weight: normal;
     height: 45px;
     line-height: 45px;
-    width: 105px;
     vertical-align: middle;
     color: #d8d3c5;
     border-color: #000000;
@@ -92,6 +83,7 @@ body {
 }
 
 .ds-num {
+    width: 105px;
     font-family: "Digi";
     border-right: 1px solid #b9b6af;
     white-space: nowrap;
@@ -123,17 +115,26 @@ body {
 
 .ds-led {
     margin: 0;
-    margin-top: 1px;
-    padding-top: 1px;
-    font-family: "NoticeStd";
-    font-size: 32px;
-    font-weight: 400;
-    text-align: center;
+    font-family: "Tables";
+    font-size: 38px;
     color: #1F1E1A;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px;
-    text-shadow: none;
+    text-shadow: 2px 2px 5px #000, -2px -2px 5px #000;
+}
+
+.ds-trend {
+    top: 0;
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.25), -1px -1px 0 rgba(0, 0, 0, 0.4);
+    color: rgb(233, 233, 233);
+    font-size: 20px;
+}
+
+.ds-target {
+    color: #75890c;
+}
+
+.ds-state {
+    border: none;
+    width: initial;
 }
 
 
@@ -277,6 +278,10 @@ body {
     margin-top: 1px;
 }
 
+.modal.fade.in {
+    top: 10%;
+}
+
 .alert {
     background-image: -webkit-gradient(linear,left 0,left 100%,from(#f5f5f5),to(#e8e8e8));
     background-image: -webkit-linear-gradient(top,#f5f5f5 0,#e8e8e8 100%);
@@ -315,4 +320,9 @@ body {
 
 .modal-body td {
     width: 50%;
+}
+
+.table-responsive {
+    overflow-x: hidden;
+    overflow-y: hidden;
 }

@@ -33,7 +33,7 @@ graph.live =
 };
 
 
-function update_profile(id)
+function updateProfile(id)
 {
     selected_profile = id;
     job_time = parseInt(profiles[id].data[profiles[id].data.length-1][0]);
@@ -46,6 +46,12 @@ function update_profile(id)
     $('#sel_prof_cost').html(kwh + ' kWh (EUR: '+ cost +')');
     graph.profile.data = profiles[id].data;
     graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
+}
+
+function deleteProfile()
+{
+    console.log("Delete profile:" + selected_profile_name);
+    // FIXME: Add cmd for socket communication to delete stored profile
 }
 
 
@@ -68,7 +74,7 @@ function updateProfileTable()
 {
     var dps = 0;
     var slope = "";
-    var color = [];
+    var color = "";
 
     var html = '<h3>Profile Points</h3><div class="table-responsive" style="scroll: none"><table class="table table-striped">';
         html += '<tr><th style="width: 50px">#</th><th>Target Time</th><th>Target Temperature</th><th>Slope in &deg;C/s</th><th></th></tr>';
@@ -76,22 +82,22 @@ function updateProfileTable()
     for(var i=0; i<graph.profile.data.length;i++)
     {
         if (i>=1) dps = Math.round( (graph.profile.data[i][1]-graph.profile.data[i-1][1])/(graph.profile.data[i][0]-graph.profile.data[i-1][0]) * 10) / 10;
-        if (dps  > 0) { slope = "up";     color[0]="red";  color[1]="rgba(233, 28, 0, 0.54)"; } else
-        if (dps  < 0) { slope = "down";   color[0]="blue";  color[1]="rgba(74, 159, 255, 0.54)"; dps *= -1; } else
-        if (dps == 0) { slope = "right";  color[0]="white";  color[1]="grey"; }
+        if (dps  > 0) { slope = "up";     color="rgba(206, 5, 5, 1)"; } else
+        if (dps  < 0) { slope = "down";   color="rgba(23, 108, 204, 1)"; dps *= -1; } else
+        if (dps == 0) { slope = "right";  color="grey"; }
 
         html += '<tr><td><h4>' + i + '</h4></td>';
         html += '<td><input type="text" class="form-control" id="profiletable-0-'+i+'" value="'+ graph.profile.data[i][0] + '" style="width: 60px" /></td>';
         html += '<td><input type="text" class="form-control" id="profiletable-1-'+i+'" value="'+ graph.profile.data[i][1] + '" style="width: 60px" /></td>';
-        html += '<td><div class="input-group"><span class="glyphicon glyphicon-arrow-' + slope +
-                ' input-group-addon" style="top: 0; text-shadow: 1px 1px 0 rgba(255, 255, 255, 1), -1px -1px 0 rgba(0, 0, 0, 1); font-weight: bold; color: '+color[0]+'; background: '+color[1]+'"></span><input type="text" class="form-control ds-input" readonly value="' + dps + '" style="width: 50px" /></div></td>';
+        html += '<td><div class="input-group"><span class="glyphicon glyphicon-circle-arrow-' + slope +
+                ' input-group-addon ds-trend" style="background: '+color+'"></span><input type="text" class="form-control ds-input" readonly value="' + dps + '" style="width: 50px" /></div></td>';
         html += '<td>&nbsp;</td></tr>';
     }
 
     html += '</table></div>';
 
     $('#profile_table').html(html);
-    
+
     //Link table to graph
     $(".form-control").change(function(e)
         {
@@ -100,7 +106,7 @@ function updateProfileTable()
             var fields = id.split("-");
             var col = parseInt(fields[1]);
             var row = parseInt(fields[2]);
-            
+
             graph.profile.data[row][col] = value;
             graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
             updateProfileTable();
@@ -288,9 +294,9 @@ function getOptions()
       tickColor: 'rgba(216, 211, 197, 0.2)',
       font:
       {
-        size: 12,
+        size: 14,
         lineHeight: 14,        weight: "normal",
-        family: "LCDN",
+        family: "Digi",
         variant: "small-caps",
         color: "rgba(216, 211, 197, 0.85)"
       }
@@ -306,10 +312,10 @@ function getOptions()
       tickColor: 'rgba(216, 211, 197, 0.2)',
       font:
       {
-        size: 12,
+        size: 14,
         lineHeight: 14,
         weight: "normal",
-        family: "LCDN",
+        family: "Digi",
         variant: "small-caps",
         color: "rgba(216, 211, 197, 0.85)"
       }
@@ -438,8 +444,8 @@ $(document).ready(function()
                     eta = minutes+':'+ (seconds < 10 ? "0" : "") + seconds;
 
                     updateProgress(parseFloat(x.runtime)/parseFloat(x.totaltime)*100);
-                    $('#state_prg').html(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100) + '%');
-                    $('#state_eta').html(eta);
+                    $('#progressBar').html(parseInt(parseFloat(x.runtime)/parseFloat(x.totaltime)*100) + '%');
+                    $('#state').html(eta);
                     $('#target_temp').html(parseInt(x.target));
 
                 }
@@ -451,12 +457,13 @@ $(document).ready(function()
                 }
 
                 $('#act_temp').html(parseInt(x.temperature));
-                $('#heat').css("background-color", (x.heat > 0.5 ? "rgba(233, 28, 0, 0.84)" : "rgba(46, 12, 12, 0.62") );
-                $('#heat').css("box-shadow", (x.heat > 0.5 ? "0 0 5px 0 rgba(233, 28, 0, 0.84), inset 0 0 5px 2px rgba(255,255,255,0.25)" : "0 0 1.1em 0 rgba(0,0,0,0.75)") );
-                $('#air').css("background-color", (x.air > 0.5 ? "rgba(240, 199, 67, 0.84)" : "rgba(46, 38, 12, 0.62)") );
-                $('#air').css("box-shadow", (x.air > 0.5 ? "0 0 5px 0 rgba(240, 199, 67, 0.84), inset 0 0 5px 2px rgba(255,255,255,0.25)" : "0 0 1.1em 0 rgba(0,0,0,0.75)") );
-                $('#cool').css("background-color", (x.cool > 0.5 ? "rgba(74, 159, 255, 0.84)" : "rgba(12, 28, 46, 0.62)") );
-                $('#cool').css("box-shadow", (x.cool > 0.5 ? "0 0 5px 0 rgba(74, 159, 255, 0.84), inset 0 0 5px 2px rgba(255,255,255,0.25)" : "0 0 1.1em 0 rgba(0,0,0,0.75)") );
+                $('#hazard').css("color", (x.temperature > 45 ? "rgb(255, 204, 0)" : "rgba(12, 12, 12, 0.62") );
+                $('#heat').css("color", (x.heat > 0.5 ? "rgba(233, 28, 0, 0.84)" : "rgba(46, 12, 12, 0.62") );
+                //$('#heat').css("text-shadow", (x.heat > 0.5 ? "0 0 5px rgba(233, 28, 0, 0.84), inset 0 0 5px 2px rgba(255,255,255,0.25)" : "0 0 1.1em rgba(0,0,0,0.75)") );
+                $('#air').css("color", (x.air > 0.5 ? "rgba(255, 255, 255, 0.84)" : "rgba(46, 38, 12, 0.62)") );
+                //$('#air').css("text-shadow", (x.air > 0.5 ? "0 0 5px rgba(240, 199, 67, 0.84), inset 0 0 5px 2px rgba(255,255,255,0.25)" : "0 0 1.1em rgba(0,0,0,0.75)") );
+                $('#cool').css("color", (x.cool > 0.5 ? "rgba(74, 159, 255, 0.84)" : "rgba(12, 28, 46, 0.62)") );
+                //$('#cool').css("text-shadow", (x.cool > 0.5 ? "0 0 5px rgba(74, 159, 255, 0.84), inset 0 0 5px 2px rgba(255,255,255,0.25)" : "0 0 1.1em rgba(0,0,0,0.75)") );
 
 
                 state_last = state;
@@ -532,7 +539,7 @@ $(document).ready(function()
                 {
                     selected_profile = i;
                     $('#e2').select2('val', i);
-                    update_profile(i);
+                    updateProfile(i);
                 }
 
             }
@@ -550,7 +557,7 @@ $(document).ready(function()
 
         $("#e2").on("change", function(e)
         {
-            update_profile(e.val);
+            updateProfile(e.val);
         });
 
     }
