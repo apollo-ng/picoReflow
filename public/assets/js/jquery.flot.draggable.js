@@ -78,7 +78,7 @@
                     }
 
                     var is_last = series[sidx].data.length == didx+1;
-                    
+
                     // funny hack to make drag resizing usable
                     if (newx > ax.max)
                     {
@@ -86,14 +86,8 @@
                     }
                     else if (newx < (ax.max*0.5) && newx >= ax.datamax && is_last)
                     {
-                        console.log(ax);
                         ax.options.max = newx*2;
-                        //ax.options.max = ;
-                        console.log(ax);
-                        //plot.setRange(ax);
                         plot.setupGrid();
-                        //ax.max = ax.max*2;
-                        //ax2.max = ax2.max*0.9;
                     }
 
                     plot.draw();
