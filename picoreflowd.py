@@ -10,7 +10,9 @@ from gevent.pywsgi import WSGIServer
 from geventwebsocket import WebSocketHandler, WebSocketError
 
 try:
+    sys.dont_write_bytecode = True
     import config
+    sys.dont_write_bytecode = False
 except:
     print "Could not import config file."
     print "Copy config.py.EXAMPLE to config.py and adapt it for your setup."
@@ -21,7 +23,7 @@ log = logging.getLogger("picoreflowd")
 log.info("Starting picoreflowd")
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, script_dir + '/lib')
+sys.path.insert(0, script_dir + '/lib/')
 profile_path = os.path.join(script_dir, "storage", "profiles")
 
 from oven import Oven, Profile
