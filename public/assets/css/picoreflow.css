@@ -26,7 +26,7 @@ body {
     -moz-border-radius: 7px;
     border-radius: 7px;
     border: 1px solid #ddd;
-    height: 81px;
+    height: 80px;
     -moz-box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.55);
     -webkit-box-shadow: 0 0 1.5em 0 rgba(0,0,0,0.55);
     box-shadow: 0 0 1.1em 0 rgba(0,0,0,0.55);
@@ -46,7 +46,6 @@ body {
 }
 
 .ds-panel {
-    border-top: 1px solid #000;
     background: #3F3E3A url('/picoreflow/assets/images/panel_bg.png') repeat;
     -moz-box-shadow: inset 0 0 42px 0 #000;
     -webkit-box-shadow: inset 0 0 42px 0 #000;
@@ -114,11 +113,56 @@ body {
 }
 
 .ds-led {
-    margin: -5px;
     font-family: "Tables";
     font-size: 38px;
+    text-align: center;
     color: #1F1E1A;
     text-shadow: 0 0 5px #000, 0 0 5px #000;
+    border-left: 1px solid #b9b6af;
+    height: 40px;
+    width: 42px;
+    display: inline-block;
+}
+
+
+.ds-led-hazard-active {
+    color: rgb(255, 204, 0);
+    background: -moz-radial-gradient(center, ellipse cover, rgba(242,195,67,1) 0%, rgba(241,218,54,0.26) 100%); /* FF3.6+ */
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(242,195,67,1)), color-stop(100%,rgba(241,218,54,0.26))); /* Chrome,Safari4+ */
+    background: -webkit-radial-gradient(center, ellipse cover, rgba(242,195,67,1) 0%,rgba(241,218,54,0.26) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-radial-gradient(center, ellipse cover, rgba(242,195,67,1) 0%,rgba(241,218,54,0.26) 100%); /* Opera 12+ */
+    background: -ms-radial-gradient(center, ellipse cover, rgba(242,195,67,1) 0%,rgba(241,218,54,0.26) 100%); /* IE10+ */
+    background: radial-gradient(ellipse at center, rgba(242,195,67,1) 0%,rgba(241,218,54,0.26) 100%); /* W3C */
+}
+
+.ds-led-cool-active {
+    color: rgb(74, 159, 255);
+    background: -moz-radial-gradient(center, ellipse cover, rgba(124,197,239,1) 0%, rgba(48,144,209,0.26) 100%); /* FF3.6+ */
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(124,197,239,1)), color-stop(100%,rgba(48,144,209,0.26))); /* Chrome,Safari4+ */
+    background: -webkit-radial-gradient(center, ellipse cover, rgba(124,197,239,1) 0%,rgba(48,144,209,0.26) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-radial-gradient(center, ellipse cover, rgba(124,197,239,1) 0%,rgba(48,144,209,0.26) 100%); /* Opera 12+ */
+    background: -ms-radial-gradient(center, ellipse cover, rgba(124,197,239,1) 0%,rgba(48,144,209,0.26) 100%); /* IE10+ */
+    background: radial-gradient(ellipse at center, rgba(124,197,239,1) 0%,rgba(48,144,209,0.26) 100%); /* W3C */
+}
+
+.ds-led-heat-active {
+    color: rgb(214, 42, 0);
+    background: -moz-radial-gradient(center, ellipse cover, rgba(214,25,25,1) 0%, rgba(214,42,0,0.26) 100%); /* FF3.6+ */
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(214,25,25,1)), color-stop(100%,rgba(214,42,0,0.26))); /* Chrome,Safari4+ */
+    background: -webkit-radial-gradient(center, ellipse cover, rgba(214,25,25,1) 0%,rgba(214,42,0,0.26) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-radial-gradient(center, ellipse cover, rgba(214,25,25,1) 0%,rgba(214,42,0,0.26) 100%); /* Opera 12+ */
+    background: -ms-radial-gradient(center, ellipse cover, rgba(214,25,25,1) 0%,rgba(214,42,0,0.26) 100%); /* IE10+ */
+    background: radial-gradient(ellipse at center, rgba(214,25,25,1) 0%,rgba(214,42,0,0.26) 100%); /* W3C */
+}
+
+.ds-led-air-active {
+    color: rgb(240, 240, 240);
+    background: -moz-radial-gradient(center, ellipse cover, rgba(221,221,221,1) 0%, rgba(221,221,221,0.26) 100%); /* FF3.6+ */
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(221,221,221,1)), color-stop(100%,rgba(221,221,221,0.26))); /* Chrome,Safari4+ */
+    background: -webkit-radial-gradient(center, ellipse cover, rgba(221,221,221,1) 0%,rgba(221,221,221,0.26) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-radial-gradient(center, ellipse cover, rgba(221,221,221,1) 0%,rgba(221,221,221,0.26) 100%); /* Opera 12+ */
+    background: -ms-radial-gradient(center, ellipse cover, rgba(221,221,221,1) 0%,rgba(221,221,221,0.26) 100%); /* IE10+ */
+    background: radial-gradient(ellipse at center, rgba(221,221,221,1) 0%,rgba(221,221,221,0.26) 100%); /* W3C */
 }
 
 .ds-trend {
@@ -135,9 +179,22 @@ body {
 .ds-state {
     border: none;
     width: initial;
+    text-align: center;
+    width: 168px;
+    padding: 0;
+}
+
+.ds-state {
+    border: none;
+    width: initial;
+    text-align: center;
+    width: 168px;
+    padding: 0;
 }
 
 .ds-text {
+    border: none;
+    width: initial;
     font-family: sans-serif;
     font-size: 32px;
 }
