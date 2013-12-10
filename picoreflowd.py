@@ -1,4 +1,6 @@
-import os,logging,json
+import os
+import logging
+import json
 
 import bottle
 from gevent.pywsgi import WSGIServer
@@ -11,7 +13,7 @@ except:
     print "Copy config.py.EXAMPLE to config.py and adapt it for your setup."
     exit(1)
 
-logging.basicConfig(level = config.log_level, format = config.log_format)
+logging.basicConfig(level=config.log_level, format=config.log_format)
 log = logging.getLogger("picoreflowd")
 log.info("Starting picoreflowd")
 
@@ -22,21 +24,28 @@ app = bottle.Bottle()
 oven = Oven()
 ovenWatcher = OvenWatcher(oven)
 
+script_dir = os.path.dirname(os.path.realpath(__file__))
+profile_path = os.path.join(script_dir, "storage", "profiles")
+
+
 @app.route('/')
 def index():
     return bottle.redirect('/picoreflow/index.html')
 
+
 @app.route('/picoreflow/:filename#.*#')
 def send_static(filename):
-    log.debug("serving %s"%filename)
+    log.debug("serving %s" % filename)
     return bottle.static_file(filename, root='./public/')
 
+
 def get_websocket_from_request():
-    env = bottle.request.environ;
+    env = bottle.request.environ
     wsock = env.get('wsgi.websocket')
     if not wsock:
         abort(400, 'Expected WebSocket request.')
     return wsock
+
 
 @app.route('/control')
 def handle_control():
@@ -45,7 +54,7 @@ def handle_control():
     while True:
         try:
             message = wsock.receive()
-            log.info("Received (control): %s"% message)
+            log.info("Received (control): %s" % message)
             msgdict = json.loads(message)
             if msgdict.get("cmd") == "RUN":
                 log.info("RUN command received")
@@ -61,7 +70,7 @@ def handle_control():
                 if profile_obj:
                     profile_json = json.dumps(profile_obj)
                     profile = Profile(profile_json)
-                simulated_oven = Oven(simulate=True,time_step=0.05)
+                simulated_oven = Oven(simulate=True, time_step=0.05)
                 simulation_watcher = OvenWatcher(simulated_oven)
                 simulation_watcher.add_observer(wsock)
                 #simulated_oven.run_profile(profile)
@@ -73,6 +82,7 @@ def handle_control():
             break
     log.info("websocket (control) closed")
 
+
 @app.route('/storage')
 def handle_storage():
     wsock = get_websocket_from_request()
@@ -82,7 +92,7 @@ def handle_storage():
             message = wsock.receive()
             if not message:
                 break
-            log.debug("websocket (storage) received: %s"%message)
+            log.debug("websocket (storage) received: %s" % message)
 
             try:
                 msgdict = json.loads(message)
@@ -95,20 +105,21 @@ def handle_storage():
             elif msgdict.get("cmd") == "PUT":
                 log.info("PUT command received")
                 profile_obj = msgdict.get('profile')
-                force = msgdict.get('force',False)
+                force = msgdict.get('force', False)
                 if profile_obj:
                     #del msgdict["cmd"]
-                    if save_profile(profile_obj,force):
-                        msgdict["resp"]="OK"
+                    if save_profile(profile_obj, force):
+                        msgdict["resp"] = "OK"
                     else:
-                        msgdict["resp"]="FAIL"
-                    log.debug("websocket (storage) sent: %s"%message)
+                        msgdict["resp"] = "FAIL"
+                    log.debug("websocket (storage) sent: %s" % message)
 
                     wsock.send(json.dumps(msgdict))
                     wsock.send(get_profiles())
         except WebSocketError:
             break
     log.info("websocket (storage) closed")
+
 
 @app.route('/status')
 def handle_status():
@@ -123,41 +134,42 @@ def handle_status():
             break
     log.info("websocket (status) closed")
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
-profile_path = os.path.join(script_dir,"storage","profiles")
 
 def get_profiles():
-    try :
+    try:
         profile_files = os.listdir(profile_path)
-    except :
+    except:
         profile_files = []
     profiles = []
     for filename in profile_files:
-        with open(os.path.join(profile_path,filename), 'r') as f:
+        with open(os.path.join(profile_path, filename), 'r') as f:
             profiles.append(json.load(f))
     return json.dumps(profiles)
+
 
 def save_profile(profile, force=False):
     profile_json = json.dumps(profile)
     filename = profile['name']+".json"
-    filepath = os.path.join(profile_path,filename)
+    filepath = os.path.join(profile_path, filename)
     if not force and os.path.exists(filepath):
-        log.error("Could not write, %s already exists"%filepath)
+        log.error("Could not write, %s already exists" % filepath)
         return False
     with open(filepath, 'w+') as f:
         f.write(profile_json)
         f.close()
-    log.info("Wrote %s"%filepath)
+    log.info("Wrote %s" % filepath)
     return True
+
 
 def main():
     ip = config.listening_ip
     port = config.listening_port
-    log.info("listening on %s:%d"%(ip,port))
+    log.info("listening on %s:%d" % (ip, port))
 
-    server = WSGIServer((ip,port), app,
-                    handler_class=WebSocketHandler)
+    server = WSGIServer((ip, port), app,
+                        handler_class=WebSocketHandler)
     server.serve_forever()
+
 
 if __name__ == "__main__":
     main()
