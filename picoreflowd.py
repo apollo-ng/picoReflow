@@ -1,4 +1,7 @@
+#!/usr/bin/env python
+
 import os
+import sys
 import logging
 import json
 
@@ -17,15 +20,16 @@ logging.basicConfig(level=config.log_level, format=config.log_format)
 log = logging.getLogger("picoreflowd")
 log.info("Starting picoreflowd")
 
+script_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, script_dir + '/lib')
+profile_path = os.path.join(script_dir, "storage", "profiles")
+
 from oven import Oven, Profile
 from ovenWatcher import OvenWatcher
 
 app = bottle.Bottle()
 oven = Oven()
 ovenWatcher = OvenWatcher(oven)
-
-script_dir = os.path.dirname(os.path.realpath(__file__))
-profile_path = os.path.join(script_dir, "storage", "profiles")
 
 
 @app.route('/')
