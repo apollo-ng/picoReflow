@@ -19,3 +19,6 @@ Raspbian:
 
 sudo apt-get install python-dev libevent-dev
 sudo pip install greenlet bottle gevent gevent-websocket
+
+
+More info: https://apollo.open-resource.org/mission:resources:picoreflow
