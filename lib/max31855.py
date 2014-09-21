@@ -12,7 +12,7 @@ class MAX31855(object):
         '''Initialize Soft (Bitbang) SPI bus
 
         Parameters:
-        - cs_pin:    Chip Select (CS) / Slave Select (SS) pin (Any GPIO)  
+        - cs_pin:    Chip Select (CS) / Slave Select (SS) pin (Any GPIO)
         - clock_pin: Clock (SCLK / SCK) pin (Any GPIO)
         - data_pin:  Data input (SO / MOSI) pin (Any GPIO)
         - units:     (optional) unit of measurement to return. ("c" (default) | "k" | "f")

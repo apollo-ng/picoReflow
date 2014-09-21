@@ -4,7 +4,6 @@ import random
 import datetime
 import logging
 import json
-
 import config
 
 log = logging.getLogger(__name__)
@@ -24,7 +23,6 @@ try:
     GPIO.setup(config.gpio_cool, GPIO.OUT)
     GPIO.setup(config.gpio_air, GPIO.OUT)
     GPIO.setup(config.gpio_door, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
     gpio_available = True
 except ImportError:
     msg = "Could not initialize GPIOs, oven operation will only be simulated!"
@@ -182,7 +180,10 @@ class TempSensorReal(TempSensor):
 
     def run(self):
         while True:
-            self.temperature = self.thermocouple.get()
+            try:
+                self.temperature = self.thermocouple.get()
+            except MAX31855Error as error:
+                log.error("MAX31855 reported Error: "+ error.value)
             time.sleep(self.time_step)
 
 
