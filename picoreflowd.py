@@ -6,8 +6,10 @@ import logging
 import json
 
 import bottle
+import gevent
 from gevent.pywsgi import WSGIServer
-from geventwebsocket import WebSocketHandler, WebSocketError
+import geventwebsocket
+from geventwebsocket.handler import WebSocketHandler
 
 try:
     sys.dont_write_bytecode = True
