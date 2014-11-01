@@ -7,8 +7,8 @@ import json
 
 import bottle
 import gevent
-from gevent.pywsgi import WSGIServer
 import geventwebsocket
+from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
 
 try:
