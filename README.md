@@ -17,10 +17,10 @@ successfully on any other OS, please update this:
 
 #### Currently tested versions
 
-    * greenlet-0.4.2
-    * bottle-0.12.4
-    * gevent-1.0
-    * gevent-websocket-0.9.3
+  * greenlet-0.4.2
+  * bottle-0.12.4
+  * gevent-1.0
+  * gevent-websocket-0.9.3
 
 #### Ubuntu/Raspbian
 
