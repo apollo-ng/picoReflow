@@ -38,7 +38,7 @@ successfully on any other OS, please update this:
 
 If you want to deploy the code on a PI for production:
 
-    * pip install RPi.GPIO
+    $ pip install RPi.GPIO
 
 This **only applies to non-Raspbian installations**, since Raspbian ships
 RPi.GPIO with the default installation.
@@ -62,7 +62,8 @@ All parameters are defined in config.py, just copy the example and review/change
 
 ### Client Access
 
-Open Browser and goto http://127.0.0.1:8080
+Open Browser and goto http://127.0.0.1:8080 (for local development) or the IP
+of your PI and the port defined in config.py (default 8080).
 
 ## License
 
