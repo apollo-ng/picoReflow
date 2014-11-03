@@ -3,7 +3,13 @@ picoReflow
 
 Turns a Raspberry Pi into a universal, web enabled Reflow Oven Controller.
 
+**Standard Interface**
+
 ![Image](https://apollo.open-resource.org/_media/mission:resources:picoreflow_webinterface.jpg)
+
+**Curve Editor**
+
+![Image](https://apollo.open-resource.org/_media/mission:resources:picoreflow_webinterface_edit.jpg)
 
 Based on MAX 31855 Cold-Junction K-Type Thermocouple and Raspberry Pi GPIO driven Solid State Relays.
 
