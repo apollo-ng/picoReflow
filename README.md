@@ -1,7 +1,10 @@
 picoReflow
 ==========
 
-Turns a Raspberry Pi into a universal, web enabled Reflow Oven Controller.
+Turns a Raspberry Pi into a cheap, universal & web-enabled Reflow Oven Controller.
+Of course, since it is basically just a robot sensing temperature and controlling
+environmental agitators (heating/cooling) you can use it as inspiration / basis
+for any other kind of PID based temperature control project. Drop a link if you do :)
 
 **Standard Interface**
 
