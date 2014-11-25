@@ -4,6 +4,7 @@ var graph = [ 'profile', 'live'];
 var points = [];
 var profiles = [];
 var selected_profile = 0;
+var time_mode = 0;
 var selected_profile_name = "leadfree";
 
 var host = "ws://" + window.location.hostname + ":8080";
@@ -77,7 +78,7 @@ function updateProfileTable()
     var color = "";
 
     var html = '<h3>Profile Points</h3><div class="table-responsive" style="scroll: none"><table class="table table-striped">';
-        html += '<tr><th style="width: 50px">#</th><th>Target Time</th><th>Target Temperature</th><th>Slope in &deg;C/s</th><th></th></tr>';
+        html += '<tr><th style="width: 50px">#</th><th>Target Time</th><th>Target Temperature in °C</th><th>Slope in &deg;C/s</th><th></th></tr>';
 
     for(var i=0; i<graph.profile.data.length;i++)
     {
@@ -101,7 +102,7 @@ function updateProfileTable()
     //Link table to graph
     $(".form-control").change(function(e)
         {
-            var id = $(this)[0].id//e.currentTarget.attributes.id;
+            var id = $(this)[0].id; //e.currentTarget.attributes.id
             var value = parseInt($(this)[0].value);
             var fields = id.split("-");
             var col = parseInt(fields[1]);
@@ -111,6 +112,25 @@ function updateProfileTable()
             graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
             updateProfileTable();
         });
+}
+
+function timeTickFormatter(val)
+{
+    if (val < 1800)
+    {
+        return val;
+    }
+    else
+    {
+        var hours = Math.floor(val / (3600));
+        var div_min = val % (3600);
+        var minutes = Math.floor(div_min / 60);
+
+        if (hours   < 10) {hours   = "0"+hours;}
+        if (minutes < 10) {minutes = "0"+minutes;}
+
+        return hours+":"+minutes;
+    }
 }
 
 function runTask()
@@ -301,9 +321,9 @@ function getOptions()
 
 	xaxis:
     {
-      //tickSize: 30,
       min: 0,
       tickColor: 'rgba(216, 211, 197, 0.2)',
+      tickFormatter: timeTickFormatter,
       font:
       {
         size: 14,
