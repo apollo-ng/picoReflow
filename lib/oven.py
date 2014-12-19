@@ -10,7 +10,15 @@ import config
 log = logging.getLogger(__name__)
 
 try:
-    from max31855 import MAX31855, MAX31855Error
+    if (config.max31855 == config.max6675):
+    	log.error("choose (only) one converter IC")
+	exit()
+    if config.max31855:
+    	from max31855 import MAX31855, MAX31855Error
+    	log.info("import MAX31855")
+    if config.max6675:
+   	from max6675 import MAX6675, MAX6675Error
+    	log.info("import MAX6675")
     sensor_available = True
 except ImportError:
     log.warning("Could not initialize temperature sensor, using dummy values!")
@@ -175,7 +183,15 @@ class TempSensor(threading.Thread):
 class TempSensorReal(TempSensor):
     def __init__(self, time_step):
         TempSensor.__init__(self, time_step)
-        self.thermocouple = MAX31855(config.gpio_sensor_cs,
+        if config.max6675:
+        	log.info("init MAX6675")
+        	self.thermocouple = MAX6675(config.gpio_sensor_cs,
+                                     config.gpio_sensor_clock,
+                                     config.gpio_sensor_data,
+                                     "c")
+        if config.max31855:
+        	log.info("init MAX31855")
+        	self.thermocouple = MAX31855(config.gpio_sensor_cs,
                                      config.gpio_sensor_clock,
                                      config.gpio_sensor_data,
                                      "c")
