@@ -10,7 +10,7 @@ log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
 
 ### Server
 listening_ip = "0.0.0.0"
-listening_port = 8080
+listening_port = 8081
 
 ########################################################################
 #
@@ -29,10 +29,11 @@ gpio_air  = 9   # Switches 0-phase det. solid-state-relay
 ### Inputs
 gpio_door = 18
 
-max31855 = 0
-max6675 = 1
+### Thermocouple Adapter selection (MAX31855 or MAX6675)
+max31855 = 1
+max6675 = 0
 
-### MAX31855 K-Type Thermocouple I2C
+### Thermocouple I2C Connection
 gpio_sensor_cs = 27
 gpio_sensor_clock = 22
 gpio_sensor_data = 17

@@ -7,7 +7,7 @@ var selected_profile = 0;
 var time_mode = 0;
 var selected_profile_name = "leadfree";
 
-var host = "ws://" + window.location.hostname + ":8080";
+var host = "ws://" + window.location.hostname + ":" + window.location.port;
 var ws_status = new WebSocket(host+"/status");
 var ws_control = new WebSocket(host+"/control");
 var ws_storage = new WebSocket(host+"/storage");

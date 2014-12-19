@@ -15,7 +15,11 @@ Don't forget to share and drop a link, when you do :)
 
 ![Image](https://apollo.open-resource.org/_media/mission:resources:picoreflow_webinterface_edit.jpg)
 
-Based on MAX 31855 Cold-Junction K-Type Thermocouple and Raspberry Pi GPIO driven Solid State Relays.
+## Hardware
+
+  * Raspberry Pi (Rev 2B)
+  * MAX 31855/6675 Cold-Junction K-Type Thermocouple
+  * GPIO driven Solid-State-Relays/MOSFETs
 
 ## Installation
 
