@@ -426,6 +426,11 @@ $(document).ready(function()
                 if (x.profile)
                 {
                     selected_profile_name = x.profile.name;
+                    $.each(profiles,  function(i,v) {
+                        if(v.name == x.profile.name) {
+                            updateProfile(i);
+                            $('#e2').select2('val', i);
+                    });
                 }
 
                 $.each(x.log, function(i,v) {
