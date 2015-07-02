@@ -86,6 +86,8 @@ class Oven (threading.Thread):
         self.reset()
 
     def run(self):
+        temperature_count = 0
+        last_temp = 0
         while True:
             self.door = self.get_door_state()
 
@@ -102,8 +104,24 @@ class Oven (threading.Thread):
                 log.info("pid: %.3f" % pid)
 
                 self.set_cool(pid <= -1)
+                if(pid > 0):
+                    # The temp should be changing with the heat on
+                    # Count the number of time_steps encountered with no change and the heat on
+                    if last_temp == self.temp_sensor.temperature:
+                        temperature_count += 1
+                    else:
+                        temperature_count = 0
+                    # If the heat is on and nothing is changing, reset
+                    # The direction or amount of change does not matter
+                    # This prevents runaway in the event of a sensor read failure                   
+                    if temperature_count > 20:
+                        log.info("Error reading sensor, oven temp not responding to heat.")
+                        self.reset()
+                else:
+                    temperature_count = 0
+                
                 self.set_heat(pid > 0)
-
+                
                 #if self.profile.is_rising(self.runtime):
                 #    self.set_cool(False)
                 #    self.set_heat(self.temp_sensor.temperature < self.target)
@@ -118,6 +136,9 @@ class Oven (threading.Thread):
 
                 if self.runtime >= self.totaltime:
                     self.reset()
+
+            #Capture the last temperature value
+            last_temp = self.temp_sensor.temperature
 
             time.sleep(self.time_step)
 
