@@ -430,6 +430,7 @@ $(document).ready(function()
                         if(v.name == x.profile.name) {
                             updateProfile(i);
                             $('#e2').select2('val', i);
+                        }
                     });
                 }
 
