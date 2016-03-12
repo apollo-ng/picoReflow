@@ -3,9 +3,9 @@ var state_last = "";
 var graph = [ 'profile', 'live'];
 var points = [];
 var profiles = [];
-var selected_profile = 0;
 var time_mode = 0;
-var selected_profile_name = "leadfree";
+var selected_profile = 0;
+var selected_profile_name = 'leadfree';
 
 var host = "ws://" + window.location.hostname + ":" + window.location.port;
 var ws_status = new WebSocket(host+"/status");
@@ -50,9 +50,26 @@ function updateProfile(id)
 
 function deleteProfile()
 {
+    var profile = { "type": "profile", "data": "", "name": selected_profile_name };
+    var delete_struct = { "cmd": "DELETE", "profile": profile };
+
+    var delete_cmd = JSON.stringify(delete_struct);
     console.log("Delete profile:" + selected_profile_name);
-    // FIXME: Add cmd for socket communication to delete stored profile
-    leaveEditMode();
+
+    ws_storage.send(delete_cmd);
+
+    selected_profile_name = profiles[0].name;
+    ws_storage.send('GET');
+    state="IDLE";
+    $('#edit').hide();
+    $('#profile_selector').show();
+    $('#btn_controls').show();
+    $('#status').slideDown();
+    $('#profile_table').slideUp();
+    $('#e2').select2('val', 0);
+    graph.profile.points.show = false;
+    graph.profile.draggable = false;
+    graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
 }
 
 
@@ -193,6 +210,7 @@ function enterEditMode()
     $('#edit').show();
     $('#profile_selector').hide();
     $('#btn_controls').hide();
+    console.log(profiles);
     $('#form_profile_name').attr('value', profiles[selected_profile].name);
     graph.profile.points.show = true;
     graph.profile.draggable = true;
@@ -558,6 +576,16 @@ $(document).ready(function()
             profiles = message;
             //delete old options in select
             $('#e2').find('option').remove().end();
+            // check if current selected value is a valid profile name
+            // if not, update with first available profile name
+            var valid_profile_names = profiles.map(function(a) {return a.name;});
+            if (
+              valid_profile_names.length > 0 && 
+              $.inArray(selected_profile_name, valid_profile_names) === -1
+            ) {
+              selected_profile = 0;
+              selected_profile_name = valid_profile_names[0];
+            }            
 
             // fill select with new options from websocket
             for (var i=0; i<profiles.length; i++)
@@ -579,7 +607,7 @@ $(document).ready(function()
         $("#e2").select2(
         {
             placeholder: "Select Profile",
-            allowClear: false,
+            allowClear: true,
             minimumResultsForSearch: -1
         });
 

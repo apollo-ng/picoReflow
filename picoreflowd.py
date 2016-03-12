@@ -110,6 +110,13 @@ def handle_storage():
             if message == "GET":
                 log.info("GET command recived")
                 wsock.send(get_profiles())
+            elif msgdict.get("cmd") == "DELETE":
+                log.info("DELETE command received")
+                profile_obj = msgdict.get('profile')
+                if delete_profile(profile_obj):
+                  msgdict["resp"] = "OK"
+                wsock.send(json.dumps(msgdict))
+                #wsock.send(get_profiles())
             elif msgdict.get("cmd") == "PUT":
                 log.info("PUT command received")
                 profile_obj = msgdict.get('profile')
@@ -168,6 +175,13 @@ def save_profile(profile, force=False):
     log.info("Wrote %s" % filepath)
     return True
 
+def delete_profile(profile):
+    profile_json = json.dumps(profile)
+    filename = profile['name']+".json"
+    filepath = os.path.join(profile_path, filename)
+    os.remove(filepath)
+    log.info("Deleted %s" % filepath)
+    return True
 
 def main():
     ip = config.listening_ip
