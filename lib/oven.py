@@ -215,13 +215,14 @@ class TempSensorReal(TempSensor):
         	self.thermocouple = MAX6675(config.gpio_sensor_cs,
                                      config.gpio_sensor_clock,
                                      config.gpio_sensor_data,
-                                     "c")
+                                     config.temp_scale)
+
         if config.max31855:
         	log.info("init MAX31855")
         	self.thermocouple = MAX31855(config.gpio_sensor_cs,
                                      config.gpio_sensor_clock,
                                      config.gpio_sensor_data,
-                                     "c")
+                                     config.temp_scale)
 
     def run(self):
         while True:

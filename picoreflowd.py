@@ -136,6 +136,19 @@ def handle_storage():
     log.info("websocket (storage) closed")
 
 
+@app.route('/config')
+def handle_config():
+    wsock = get_websocket_from_request()
+    log.info("websocket (config) opened")
+    while True:
+        try:
+            message = wsock.receive()
+            wsock.send(get_config())
+        except WebSocketError:
+            break
+    log.info("websocket (config) closed")
+
+
 @app.route('/status')
 def handle_status():
     wsock = get_websocket_from_request()
@@ -182,6 +195,15 @@ def delete_profile(profile):
     os.remove(filepath)
     log.info("Deleted %s" % filepath)
     return True
+
+
+def get_config():
+    return json.dumps({"temp_scale": config.temp_scale,
+        "time_scale_slope": config.time_scale_slope,
+        "time_scale_profile": config.time_scale_profile,
+        "kwh_rate": config.kwh_rate,
+        "currency_type": config.currency_type})    
+
 
 def main():
     ip = config.listening_ip
