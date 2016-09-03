@@ -44,7 +44,7 @@ def index():
 @app.route('/picoreflow/:filename#.*#')
 def send_static(filename):
     log.debug("serving %s" % filename)
-    return bottle.static_file(filename, root='./public/')
+    return bottle.static_file(filename, root=os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "public"))
 
 
 def get_websocket_from_request():
@@ -110,6 +110,13 @@ def handle_storage():
             if message == "GET":
                 log.info("GET command recived")
                 wsock.send(get_profiles())
+            elif msgdict.get("cmd") == "DELETE":
+                log.info("DELETE command received")
+                profile_obj = msgdict.get('profile')
+                if delete_profile(profile_obj):
+                  msgdict["resp"] = "OK"
+                wsock.send(json.dumps(msgdict))
+                #wsock.send(get_profiles())
             elif msgdict.get("cmd") == "PUT":
                 log.info("PUT command received")
                 profile_obj = msgdict.get('profile')
@@ -127,6 +134,19 @@ def handle_storage():
         except WebSocketError:
             break
     log.info("websocket (storage) closed")
+
+
+@app.route('/config')
+def handle_config():
+    wsock = get_websocket_from_request()
+    log.info("websocket (config) opened")
+    while True:
+        try:
+            message = wsock.receive()
+            wsock.send(get_config())
+        except WebSocketError:
+            break
+    log.info("websocket (config) closed")
 
 
 @app.route('/status')
@@ -167,6 +187,22 @@ def save_profile(profile, force=False):
         f.close()
     log.info("Wrote %s" % filepath)
     return True
+
+def delete_profile(profile):
+    profile_json = json.dumps(profile)
+    filename = profile['name']+".json"
+    filepath = os.path.join(profile_path, filename)
+    os.remove(filepath)
+    log.info("Deleted %s" % filepath)
+    return True
+
+
+def get_config():
+    return json.dumps({"temp_scale": config.temp_scale,
+        "time_scale_slope": config.time_scale_slope,
+        "time_scale_profile": config.time_scale_profile,
+        "kwh_rate": config.kwh_rate,
+        "currency_type": config.currency_type})    
 
 
 def main():

@@ -146,11 +146,17 @@ class Oven (threading.Thread):
         if value:
             self.heat = 1.0
             if gpio_available:
-                GPIO.output(config.gpio_heat, GPIO.LOW)
+               if config.heater_invert:
+               	 GPIO.output(config.gpio_heat, GPIO.LOW)
+               else:
+                 GPIO.output(config.gpio_heat, GPIO.HIGH)
         else:
             self.heat = 0.0
             if gpio_available:
-                GPIO.output(config.gpio_heat, GPIO.HIGH)
+               if config.heater_invert:
+               	 GPIO.output(config.gpio_heat, GPIO.HIGH)
+               else:
+                 GPIO.output(config.gpio_heat, GPIO.LOW)
 
     def set_cool(self, value):
         if value:
@@ -209,13 +215,14 @@ class TempSensorReal(TempSensor):
         	self.thermocouple = MAX6675(config.gpio_sensor_cs,
                                      config.gpio_sensor_clock,
                                      config.gpio_sensor_data,
-                                     "c")
+                                     config.temp_scale)
+
         if config.max31855:
         	log.info("init MAX31855")
         	self.thermocouple = MAX31855(config.gpio_sensor_cs,
                                      config.gpio_sensor_clock,
                                      config.gpio_sensor_data,
-                                     "c")
+                                     config.temp_scale)
 
     def run(self):
         while True:

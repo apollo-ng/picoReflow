@@ -3,14 +3,23 @@ var state_last = "";
 var graph = [ 'profile', 'live'];
 var points = [];
 var profiles = [];
-var selected_profile = 0;
 var time_mode = 0;
-var selected_profile_name = "leadfree";
+var selected_profile = 0;
+var selected_profile_name = 'leadfree';
+var temp_scale = "c";
+var time_scale_slope = "s";
+var time_scale_profile = "s";
+var time_scale_long = "Seconds";
+var temp_scale_display = "C";
+var kwh_rate = 0.26;
+var currency_type = "EUR";
 
 var host = "ws://" + window.location.hostname + ":" + window.location.port;
 var ws_status = new WebSocket(host+"/status");
 var ws_control = new WebSocket(host+"/control");
+var ws_config = new WebSocket(host+"/config");
 var ws_storage = new WebSocket(host+"/storage");
+
 
 if(window.webkitRequestAnimationFrame) window.requestAnimationFrame = window.webkitRequestAnimationFrame;
 
@@ -36,23 +45,39 @@ graph.live =
 function updateProfile(id)
 {
     selected_profile = id;
-    job_time = parseInt(profiles[id].data[profiles[id].data.length-1][0]);
-    var kwh = (3850*job_time/3600/1000).toFixed(2);
-    var cost =  (kwh*0.26).toFixed(2);
-    var minutes = Math.floor(job_time/60), seconds = job_time-minutes*60;
-    job_time = minutes+':'+ (seconds < 10 ? "0" : "") + seconds;
+    var job_seconds = parseInt(profiles[id].data[profiles[id].data.length-1][0]);
+    var kwh = (3850*job_seconds/3600/1000).toFixed(2);
+    var cost =  (kwh*kwh_rate).toFixed(2);
+    var job_time = new Date(job_seconds * 1000).toISOString().substr(11, 8);
     $('#sel_prof').html(profiles[id].name);
     $('#sel_prof_eta').html(job_time);
-    $('#sel_prof_cost').html(kwh + ' kWh (EUR: '+ cost +')');
+    $('#sel_prof_cost').html(kwh + ' kWh ('+ currency_type +': '+ cost +')');
     graph.profile.data = profiles[id].data;
     graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
 }
 
 function deleteProfile()
 {
+    var profile = { "type": "profile", "data": "", "name": selected_profile_name };
+    var delete_struct = { "cmd": "DELETE", "profile": profile };
+
+    var delete_cmd = JSON.stringify(delete_struct);
     console.log("Delete profile:" + selected_profile_name);
-    // FIXME: Add cmd for socket communication to delete stored profile
-    leaveEditMode();
+
+    ws_storage.send(delete_cmd);
+
+    selected_profile_name = profiles[0].name;
+    ws_storage.send('GET');
+    state="IDLE";
+    $('#edit').hide();
+    $('#profile_selector').show();
+    $('#btn_controls').show();
+    $('#status').slideDown();
+    $('#profile_table').slideUp();
+    $('#e2').select2('val', 0);
+    graph.profile.points.show = false;
+    graph.profile.draggable = false;
+    graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
 }
 
 
@@ -78,20 +103,20 @@ function updateProfileTable()
     var color = "";
 
     var html = '<h3>Profile Points</h3><div class="table-responsive" style="scroll: none"><table class="table table-striped">';
-        html += '<tr><th style="width: 50px">#</th><th>Target Time</th><th>Target Temperature in °C</th><th>Slope in &deg;C/s</th><th></th></tr>';
+        html += '<tr><th style="width: 50px">#</th><th>Target Time in ' + time_scale_long+ '</th><th>Target Temperature in °'+temp_scale_display+'</th><th>Slope in &deg;'+temp_scale_display+'/'+time_scale_slope+'</th><th></th></tr>';
 
     for(var i=0; i<graph.profile.data.length;i++)
     {
-        if (i>=1) dps = Math.round( (graph.profile.data[i][1]-graph.profile.data[i-1][1])/(graph.profile.data[i][0]-graph.profile.data[i-1][0]) * 10) / 10;
+
+        if (i>=1) dps =  ((graph.profile.data[i][1]-graph.profile.data[i-1][1])/(graph.profile.data[i][0]-graph.profile.data[i-1][0]) * 10) / 10;
         if (dps  > 0) { slope = "up";     color="rgba(206, 5, 5, 1)"; } else
         if (dps  < 0) { slope = "down";   color="rgba(23, 108, 204, 1)"; dps *= -1; } else
         if (dps == 0) { slope = "right";  color="grey"; }
 
         html += '<tr><td><h4>' + (i+1) + '</h4></td>';
-        html += '<td><input type="text" class="form-control" id="profiletable-0-'+i+'" value="'+ graph.profile.data[i][0] + '" style="width: 60px" /></td>';
+        html += '<td><input type="text" class="form-control" id="profiletable-0-'+i+'" value="'+ timeProfileFormatter(graph.profile.data[i][0],true) + '" style="width: 60px" /></td>';
         html += '<td><input type="text" class="form-control" id="profiletable-1-'+i+'" value="'+ graph.profile.data[i][1] + '" style="width: 60px" /></td>';
-        html += '<td><div class="input-group"><span class="glyphicon glyphicon-circle-arrow-' + slope +
-                ' input-group-addon ds-trend" style="background: '+color+'"></span><input type="text" class="form-control ds-input" readonly value="' + dps + '" style="width: 50px" /></div></td>';
+        html += '<td><div class="input-group"><span class="glyphicon glyphicon-circle-arrow-' + slope + ' input-group-addon ds-trend" style="background: '+color+'"></span><input type="text" class="form-control ds-input" readonly value="' + formatDPS(dps) + '" style="width: 100px" /></div></td>';
         html += '<td>&nbsp;</td></tr>';
     }
 
@@ -107,11 +132,51 @@ function updateProfileTable()
             var fields = id.split("-");
             var col = parseInt(fields[1]);
             var row = parseInt(fields[2]);
-
-            graph.profile.data[row][col] = value;
+            
+            if (col == 0) {
+                graph.profile.data[row][col] = timeProfileFormatter(value,false);   
+            }
+            else {
+                graph.profile.data[row][col] = value;
+            }
+            
             graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
             updateProfileTable();
+
         });
+}
+
+function timeProfileFormatter(val, down) {
+    var rval = val
+    switch(time_scale_profile){
+        case "m":
+            if (down) {rval = val / 60;} else {rval = val * 60;}
+            break;
+        case "h":
+            if (down) {rval = val / 3600;} else {rval = val * 3600;} 
+            break;
+    }
+    return Math.round(rval);
+}
+
+function formatDPS(val) {
+    var tval = val;
+    if (time_scale_slope == "m") {
+        tval = val * 60;    
+    }
+    if (time_scale_slope == "h") {
+        tval = (val * 60) * 60;
+    }
+    return Math.round(tval);
+}
+
+function hazardTemp(){
+    if (temp_scale == "f") {
+        return (45 * 9 / 5) + 32
+    } 
+    else {
+        return 45
+    }
 }
 
 function timeTickFormatter(val)
@@ -193,6 +258,7 @@ function enterEditMode()
     $('#edit').show();
     $('#profile_selector').hide();
     $('#btn_controls').hide();
+    console.log(profiles);
     $('#form_profile_name').attr('value', profiles[selected_profile].name);
     graph.profile.points.show = true;
     graph.profile.draggable = true;
@@ -291,10 +357,6 @@ function saveProfile()
     leaveEditMode();
 }
 
-
-
-
-
 function getOptions()
 {
 
@@ -336,9 +398,7 @@ function getOptions()
 
 	yaxis:
     {
-  	  tickSize: 25,
       min: 0,
-	  max: 250,
       tickDecimals: 0,
       draggable: false,
       tickColor: 'rgba(216, 211, 197, 0.2)',
@@ -444,11 +504,6 @@ $(document).ready(function()
             {
                 state = x.state;
 
-                if (x.door == "OPEN")
-                {
-
-                }
-
                 if (state!=state_last)
                 {
                     if(state_last == "RUNNING")
@@ -477,13 +532,12 @@ $(document).ready(function()
                     graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ] , getOptions());
 
                     left = parseInt(x.totaltime-x.runtime);
-                    var minutes = Math.floor(left / 60);
-                    var seconds = left - minutes * 60;
-                    eta = minutes+':'+ (seconds < 10 ? "0" : "") + seconds;
+                    eta = new Date(left * 1000).toISOString().substr(11, 8);
 
                     updateProgress(parseFloat(x.runtime)/parseFloat(x.totaltime)*100);
                     $('#state').html('<span class="glyphicon glyphicon-time" style="font-size: 22px; font-weight: normal"></span><span style="font-family: Digi; font-size: 40px;">' + eta + '</span>');
                     $('#target_temp').html(parseInt(x.target));
+
 
                 }
                 else
@@ -494,16 +548,54 @@ $(document).ready(function()
                 }
 
                 $('#act_temp').html(parseInt(x.temperature));
-
+                
                 if (x.heat > 0.5) { $('#heat').addClass("ds-led-heat-active"); } else { $('#heat').removeClass("ds-led-heat-active"); }
                 if (x.cool > 0.5) { $('#cool').addClass("ds-led-cool-active"); } else { $('#cool').removeClass("ds-led-cool-active"); }
                 if (x.air > 0.5) { $('#air').addClass("ds-led-air-active"); } else { $('#air').removeClass("ds-led-air-active"); }
-                if (x.temperature > 45) { $('#hazard').addClass("ds-led-hazard-active"); } else { $('#hazard').removeClass("ds-led-hazard-active"); }
+                if (x.temperature > hazardTemp()) { $('#hazard').addClass("ds-led-hazard-active"); } else { $('#hazard').removeClass("ds-led-hazard-active"); }
+                if ((x.door == "OPEN") || (x.door == "UNKNOWN")) { $('#door').addClass("ds-led-door-open"); } else { $('#door').removeClass("ds-led-door-open"); }
 
                 state_last = state;
 
             }
         };
+
+        // Config Socket /////////////////////////////////
+        
+        ws_config.onopen = function()
+        {
+            ws_config.send('GET');
+        };
+
+        ws_config.onmessage = function(e)
+        {
+            console.log (e.data);
+            x = JSON.parse(e.data);
+            temp_scale = x.temp_scale;
+            time_scale_slope = x.time_scale_slope;
+            time_scale_profile = x.time_scale_profile;
+            kwh_rate = x.kwh_rate;
+            currency_type = x.currency_type;
+            
+            if (temp_scale == "c") {temp_scale_display = "C";} else {temp_scale_display = "F";}
+              
+
+            $('#act_temp_scale').html('º'+temp_scale_display);
+            $('#target_temp_scale').html('º'+temp_scale_display);
+
+            switch(time_scale_profile){
+                case "s":
+                    time_scale_long = "Seconds";
+                    break;
+                case "m":
+                    time_scale_long = "Minutes";
+                    break;
+                case "h":
+                    time_scale_long = "Hours";
+                    break;
+            }
+            
+        }
 
         // Control Socket ////////////////////////////////
 
@@ -558,6 +650,16 @@ $(document).ready(function()
             profiles = message;
             //delete old options in select
             $('#e2').find('option').remove().end();
+            // check if current selected value is a valid profile name
+            // if not, update with first available profile name
+            var valid_profile_names = profiles.map(function(a) {return a.name;});
+            if (
+              valid_profile_names.length > 0 && 
+              $.inArray(selected_profile_name, valid_profile_names) === -1
+            ) {
+              selected_profile = 0;
+              selected_profile_name = valid_profile_names[0];
+            }            
 
             // fill select with new options from websocket
             for (var i=0; i<profiles.length; i++)
@@ -579,7 +681,7 @@ $(document).ready(function()
         $("#e2").select2(
         {
             placeholder: "Select Profile",
-            allowClear: false,
+            allowClear: true,
             minimumResultsForSearch: -1
         });
 
