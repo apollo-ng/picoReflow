@@ -1,0 +1,32 @@
+### BEGIN INIT INFO
+# Provides: Start reflow server
+# Required-Start: $remote_fs $syslog
+# Required-Stop: $remote_fs $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Start  Reflow Server
+# Description: picoFlow On Raspberry Pi
+### END INIT INFO
+
+
+#! /bin/sh
+# /etc/init.d/reflow
+
+
+export HOME
+case "$1" in
+    start)
+        echo "Starting Reflow Server"
+        /home/pi/picoReflow/picoreflowd.py  2>&1 &
+    ;;
+    stop)
+        echo "Stopping Reflow Server"
+        reflow_PID=`ps auxwww | grep picoreflowd.py | head -1 | awk '{print $2}'`
+        kill -9 $reflow_PID
+    ;;
+    *)
+        echo "Usage: /etc/init.d/reflow {start|stop}"
+        exit 1
+    ;;
+esac
+exit 0
