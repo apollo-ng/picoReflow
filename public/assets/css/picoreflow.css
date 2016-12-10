@@ -135,6 +135,16 @@ body {
     background: radial-gradient(ellipse at center, rgba(242,195,67,1) 0%,rgba(241,218,54,0.26) 100%); /* W3C */
 }
 
+.ds-led-door-open {
+    color: rgb(214, 42, 0);
+    background: -moz-radial-gradient(center, ellipse cover, rgba(242,195,67,1) 0%, rgba(241,218,54,0.26) 100%); /* FF3.6+ */
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(242,195,67,1)), color-stop(100%,rgba(241,218,54,0.26))); /* Chrome,Safari4+ */
+    background: -webkit-radial-gradient(center, ellipse cover, rgba(242,195,67,1) 0%,rgba(241,218,54,0.26) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-radial-gradient(center, ellipse cover, rgba(242,195,67,1) 0%,rgba(241,218,54,0.26) 100%); /* Opera 12+ */
+    background: -ms-radial-gradient(center, ellipse cover, rgba(242,195,67,1) 0%,rgba(241,218,54,0.26) 100%); /* IE10+ */
+    background: radial-gradient(ellipse at center, rgba(242,195,67,1) 0%,rgba(241,218,54,0.26) 100%); /* W3C */
+}
+
 .ds-led-cool-active {
     color: rgb(74, 159, 255);
     background: -moz-radial-gradient(center, ellipse cover, rgba(124,197,239,1) 0%, rgba(48,144,209,0.26) 100%); /* FF3.6+ */
@@ -188,7 +198,7 @@ body {
     border: none;
     width: initial;
     text-align: center;
-    width: 168px;
+    width: 210px;
     padding: 0;
 }
 

@@ -12,6 +12,10 @@ log_format = '%(asctime)s %(levelname)s %(name)s: %(message)s'
 listening_ip = "0.0.0.0"
 listening_port = 8081
 
+### Cost Estimate
+kwh_rate        = 0.26  # Rate in currency_type to calculate cost to run job
+currency_type   = "EUR"   # Currency Symbol to show when calculating cost to run job
+
 ########################################################################
 #
 #   GPIO Setup (BCM SoC Numbering Schema)
@@ -25,6 +29,8 @@ listening_port = 8081
 gpio_heat = 11  # Switches zero-cross solid-state-relay
 gpio_cool = 10  # Regulates PWM for 12V DC Blower
 gpio_air  = 9   # Switches 0-phase det. solid-state-relay
+
+heater_invert = 0 # switches the polarity of the heater control
 
 ### Inputs
 gpio_door = 18
@@ -60,3 +66,13 @@ sim_R_o_nocool = 1.0    # K/W  thermal resistance oven -> environment
 sim_R_o_cool   = 0.05   # K/W  " with cooling
 sim_R_ho_noair = 0.1    # K/W  thermal resistance heat element -> oven
 sim_R_ho_air   = 0.05   # K/W  " with internal air circulation
+
+
+########################################################################
+#
+#   Time and Temperature parameters
+
+temp_scale          = "c" # c = Celsius | f = Fahrenheit - Unit to display 
+time_scale_slope    = "s" # s = Seconds | m = Minutes | h = Hours - Slope displayed in temp_scale per time_scale_slope
+time_scale_profile  = "s" # s = Seconds | m = Minutes | h = Hours - Enter and view target time in time_scale_profile
+
