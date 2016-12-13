@@ -45,7 +45,8 @@ graph.live =
 function updateProfile(id)
 {
     selected_profile = id;
-    var job_seconds = parseInt(profiles[id].data[profiles[id].data.length-1][0]);
+    selected_profile_name = profiles[id].name;
+    var job_seconds = profiles[id].data.length === 0 ? 0 : parseInt(profiles[id].data[profiles[id].data.length-1][0]);
     var kwh = (3850*job_seconds/3600/1000).toFixed(2);
     var cost =  (kwh*kwh_rate).toFixed(2);
     var job_time = new Date(job_seconds * 1000).toISOString().substr(11, 8);
@@ -66,8 +67,9 @@ function deleteProfile()
 
     ws_storage.send(delete_cmd);
 
-    selected_profile_name = profiles[0].name;
     ws_storage.send('GET');
+    selected_profile_name = profiles[0].name;
+
     state="IDLE";
     $('#edit').hide();
     $('#profile_selector').show();
@@ -133,6 +135,7 @@ function updateProfileTable()
             var col = parseInt(fields[1]);
             var row = parseInt(fields[2]);
             
+            if (graph.profile.data.length > 0) {
             if (col == 0) {
                 graph.profile.data[row][col] = timeProfileFormatter(value,false);   
             }
@@ -141,6 +144,7 @@ function updateProfileTable()
             }
             
             graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
+            }
             updateProfileTable();
 
         });
@@ -259,7 +263,7 @@ function enterEditMode()
     $('#profile_selector').hide();
     $('#btn_controls').hide();
     console.log(profiles);
-    $('#form_profile_name').attr('value', profiles[selected_profile].name);
+    $('#form_profile_name').val(profiles[selected_profile].name);
     graph.profile.points.show = true;
     graph.profile.draggable = true;
     graph.plot = $.plot("#graph_container", [ graph.profile, graph.live ], getOptions());
