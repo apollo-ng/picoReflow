@@ -68,9 +68,9 @@ class MAX31855(object):
         if data_32 is None:
             data_32 = self.data
         anyErrors = (data_32 & 0x10000) != 0    # Fault bit, D16
-        noConnection = (data_32 & 1) != 0       # OC bit, D0
-        shortToGround = (data_32 & 2) != 0      # SCG bit, D1
-        shortToVCC = (data_32 & 4) != 0         # SCV bit, D2
+        noConnection = (data_32 & 0x00000001) != 0       # OC bit, D0
+        shortToGround = (data_32 & 0x00000002) != 0      # SCG bit, D1
+        shortToVCC = (data_32 & 0x00000004) != 0         # SCV bit, D2
         if anyErrors:
             if noConnection:
                 raise MAX31855Error("No Connection")
