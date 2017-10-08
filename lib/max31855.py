@@ -1,5 +1,14 @@
 #!/usr/bin/python
-import RPi.GPIO as GPIO
+#import RPi.GPIO as GPIO
+import pigpio
+
+	GPIO = pigpio.pi()
+
+	if not GPIO.connected:
+		msg = "MAX31855 pigpio not connected!"
+		log.warning(msg)
+		gpio_available = False
+#    	exit(0)
 
 class MAX31855(object):
     '''Python driver for [MAX38155 Cold-Junction Compensated Thermocouple-to-Digital Converter](http://www.maximintegrated.com/datasheet/index.mvp/id/7273)
@@ -8,7 +17,7 @@ class MAX31855(object):
      - A [Raspberry Pi](http://www.raspberrypi.org/)
 
     '''
-    def __init__(self, cs_pin, clock_pin, data_pin, units = "c", board = GPIO.BCM):
+    def __init__(self, cs_pin, clock_pin, data_pin, hw_spi_channel, units = "c", board = GPIO.BCM):
         '''Initialize Soft (Bitbang) SPI bus
 
         Parameters:
@@ -19,6 +28,7 @@ class MAX31855(object):
         - board:     (optional) pin numbering method as per RPi.GPIO library (GPIO.BCM (default) | GPIO.BOARD)
 
         '''
+        """
         self.cs_pin = cs_pin
         self.clock_pin = clock_pin
         self.data_pin = data_pin
@@ -34,6 +44,14 @@ class MAX31855(object):
 
         # Pull chip select high to make chip inactive
         GPIO.output(self.cs_pin, GPIO.HIGH)
+        """
+        self.hw_spi = hw_spi_channel
+        
+        if self.hw_spi is None : #bit banging SPI
+        	GPIO.bb_spi_open(self.cs_pin, self.data_pin, 31 ,self.clock_pin, 20000, 1)
+
+        else : # HW SPI
+        	self.spi_h = GPIO.spi_open(self.hw_spi, 1000000, 1)
 
     def get(self):
         '''Reads SPI bus and returns current value of thermocouple.'''
@@ -48,6 +66,7 @@ class MAX31855(object):
 
     def read(self):
         '''Reads 32 bits of the SPI bus & stores as an integer in self.data.'''
+'''    
         bytesin = 0
         # Select the chip
         GPIO.output(self.cs_pin, GPIO.LOW)
@@ -62,7 +81,20 @@ class MAX31855(object):
         GPIO.output(self.cs_pin, GPIO.HIGH)
         # Save data
         self.data = bytesin
+'''
+		if self.hw_spi is None :
+			count, data = GPIO.bb_spi_xfer(self.cs_pin, [0, 0, 0, 0]) 
 
+		else :
+			count, data = GPIO.spi_read(self.spi_h, 4)
+        
+        if count == 4:
+            self.data = ((data[0])<<24) | ((data[1])<<16) | ((data[2])<<8) | data[3]
+
+        else :
+        	raise MAX31855Error("data count: "+count)
+            
+            
     def checkErrors(self, data_32 = None):
         '''Checks error bits to see if there are any SCV, SCG, or OC faults'''
         if data_32 is None:
@@ -132,8 +164,9 @@ class MAX31855(object):
 
     def cleanup(self):
         '''Selective GPIO cleanup'''
-        GPIO.setup(self.cs_pin, GPIO.IN)
-        GPIO.setup(self.clock_pin, GPIO.IN)
+#        GPIO.setup(self.cs_pin, GPIO.IN)
+#        GPIO.setup(self.clock_pin, GPIO.IN)
+        GPIO.bb_spi_close(self.cs_pin)
 
 class MAX31855Error(Exception):
      def __init__(self, value):

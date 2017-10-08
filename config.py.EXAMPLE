@@ -39,10 +39,20 @@ gpio_door = 18
 max31855 = 1
 max6675 = 0
 
-### Thermocouple I2C Connection
+### Thermocouple SPI Connection
+# spi_hw_channel Chooses HW SPI channel (0 or 1), 'None' if BB SPI is preferred
+# for HW SPI:
+#		CE0: 	gpio 8  (channel 0)
+#		CE1: 	gpio 7 	(channel 1)
+#		MISO: 	gpio 9 	(channels 0 & 1)
+#		MOSI: 	gpio 10 (channels 0 & 1)
+#		Clock:  gpio 11 (channels 0 & 1)
+# for BB SPI, below gpio configuration will be used
+spi_hw_channel = 0
 gpio_sensor_cs = 27
 gpio_sensor_clock = 22
 gpio_sensor_data = 17
+
 
 
 ########################################################################

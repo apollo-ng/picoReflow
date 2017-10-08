@@ -25,6 +25,25 @@ except ImportError:
     sensor_available = False
 
 try:
+	import pigpio
+
+	GPIO = pigpio.pi()
+
+	if not GPIO.connected:
+		msg = "Could not initialize GPIOs, oven operation will only be simulated!"
+		log.warning(msg)
+		gpio_available = False
+#    	exit(0)
+    else:
+		GPIO.set_mode(config.gpio_heat,pigpio.OUTPUT)
+    	GPIO.set_mode(config.gpio_cool, pigpio.OUTPUT)
+		GPIO.set_mode(config.gpio_air, pigpio.OUTPUT)
+		GPIO.set_mode(config.gpio_door, pigpio.INPUT)
+		GPIO.set_pull_up_down(config.gpio_door, pigpio.PUD_UP)
+		
+		gpio_available = True
+    	
+"""
     import RPi.GPIO as GPIO
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
@@ -38,7 +57,7 @@ except ImportError:
     msg = "Could not initialize GPIOs, oven operation will only be simulated!"
     log.warning(msg)
     gpio_available = False
-
+"""
 
 class Oven (threading.Thread):
     STATE_IDLE = "IDLE"
@@ -147,36 +166,44 @@ class Oven (threading.Thread):
             self.heat = 1.0
             if gpio_available:
                if config.heater_invert:
-               	 GPIO.output(config.gpio_heat, GPIO.LOW)
+#               	 GPIO.output(config.gpio_heat, GPIO.LOW)
+					GPIO.write(config.gpio_heat, 0)
                else:
-                 GPIO.output(config.gpio_heat, GPIO.HIGH)
+#                 GPIO.output(config.gpio_heat, GPIO.HIGH)
+					GPIO.write(config.gpio_heat, 1)
         else:
             self.heat = 0.0
             if gpio_available:
                if config.heater_invert:
-               	 GPIO.output(config.gpio_heat, GPIO.HIGH)
+#               	 GPIO.output(config.gpio_heat, GPIO.HIGH)
+					GPIO.write(config.gpio_heat, 1)
                else:
-                 GPIO.output(config.gpio_heat, GPIO.LOW)
+#                 GPIO.output(config.gpio_heat, GPIO.LOW)
+                 GPIO.write(config.gpio_heat, 0)
 
     def set_cool(self, value):
         if value:
             self.cool = 1.0
             if gpio_available:
-                GPIO.output(config.gpio_cool, GPIO.LOW)
+#                GPIO.output(config.gpio_cool, GPIO.LOW)
+                GPIO.write(config.gpio_cool, 0)
         else:
             self.cool = 0.0
             if gpio_available:
-                GPIO.output(config.gpio_cool, GPIO.HIGH)
+#                GPIO.output(config.gpio_cool, GPIO.HIGH)
+                GPIO.write(config.gpio_cool, 1)
 
     def set_air(self, value):
         if value:
             self.air = 1.0
             if gpio_available:
-                GPIO.output(config.gpio_air, GPIO.LOW)
+#                GPIO.output(config.gpio_air, GPIO.LOW)
+                GPIO.write(config.gpio_air, 0)
         else:
             self.air = 0.0
             if gpio_available:
-                GPIO.output(config.gpio_air, GPIO.HIGH)
+#               GPIO.output(config.gpio_air, GPIO.HIGH)
+                GPIO.write(config.gpio_air, 1)
 
     def get_state(self):
         state = {
@@ -194,7 +221,8 @@ class Oven (threading.Thread):
 
     def get_door_state(self):
         if gpio_available:
-            return "OPEN" if GPIO.input(config.gpio_door) else "CLOSED"
+#            return "OPEN" if GPIO.input(config.gpio_door) else "CLOSED"
+            return "OPEN" if GPIO.read(config.gpio_door) else "CLOSED"
         else:
             return "UNKNOWN"
 
@@ -222,6 +250,7 @@ class TempSensorReal(TempSensor):
         	self.thermocouple = MAX31855(config.gpio_sensor_cs,
                                      config.gpio_sensor_clock,
                                      config.gpio_sensor_data,
+                                     config.hw_spi_channel,
                                      config.temp_scale)
 
     def run(self):
