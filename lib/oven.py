@@ -36,28 +36,26 @@ try:
 #    	exit(0)
 	else:
 		GPIO.set_mode(config.gpio_heat,pigpio.OUTPUT)
-    	GPIO.set_mode(config.gpio_cool, pigpio.OUTPUT)
+	    	GPIO.set_mode(config.gpio_cool, pigpio.OUTPUT)
 		GPIO.set_mode(config.gpio_air, pigpio.OUTPUT)
 		GPIO.set_mode(config.gpio_door, pigpio.INPUT)
 		GPIO.set_pull_up_down(config.gpio_door, pigpio.PUD_UP)
-		
-		gpio_available = True
-    	
-"""
-    import RPi.GPIO as GPIO
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
-    GPIO.setup(config.gpio_heat, GPIO.OUT)
-    GPIO.setup(config.gpio_cool, GPIO.OUT)
-    GPIO.setup(config.gpio_air, GPIO.OUT)
-    GPIO.setup(config.gpio_door, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-    gpio_available = True
+		gpio_available = True
 except ImportError:
     msg = "Could not initialize GPIOs, oven operation will only be simulated!"
     log.warning(msg)
-    gpio_available = False
-"""
+
+
+
+# import 
+#RPi.GPIO as GPIO GPIO.setmode(GPIO.BCM) GPIO.setwarnings(False) 
+#GPIO.setup(config.gpio_heat, GPIO.OUT) GPIO.setup(config.gpio_cool, GPIO.OUT) 
+#GPIO.setup(config.gpio_air, GPIO.OUT) GPIO.setup(config.gpio_door, GPIO.IN, 
+#pull_up_down=GPIO.PUD_UP) log.warning(msg)# gpio_available = True except ImportError:
+#    gpio_available = False#    msg = "Could not initialize GPIOs, oven operation will only be simulated!"
+#    log.warning(msg)
+#    gpio_available = False
 
 class Oven (threading.Thread):
     STATE_IDLE = "IDLE"
@@ -132,15 +130,15 @@ class Oven (threading.Thread):
                         temperature_count = 0
                     # If the heat is on and nothing is changing, reset
                     # The direction or amount of change does not matter
-                    # This prevents runaway in the event of a sensor read failure                   
+                    # This prevents runaway in the event of a sensor read failure
                     if temperature_count > 20:
                         log.info("Error reading sensor, oven temp not responding to heat.")
                         self.reset()
                 else:
                     temperature_count = 0
-                
+
                 self.set_heat(pid > 0)
-                
+
                 #if self.profile.is_rising(self.runtime):
                 #    self.set_cool(False)
                 #    self.set_heat(self.temp_sensor.temperature < self.target)
@@ -250,7 +248,7 @@ class TempSensorReal(TempSensor):
         	self.thermocouple = MAX31855(config.gpio_sensor_cs,
                                      config.gpio_sensor_clock,
                                      config.gpio_sensor_data,
-                                     config.hw_spi_channel,
+                                     config.spi_hw_channel,
                                      config.temp_scale)
 
     def run(self):

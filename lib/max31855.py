@@ -2,12 +2,12 @@
 #import RPi.GPIO as GPIO
 import pigpio
 
-	GPIO = pigpio.pi()
+GPIO = pigpio.pi()
 
-	if not GPIO.connected:
-		msg = "MAX31855 pigpio not connected!"
-		log.warning(msg)
-		gpio_available = False
+if not GPIO.connected:
+	msg = "MAX31855 pigpio not connected!"
+	log.warning(msg)
+	gpio_available = False
 #    	exit(0)
 
 class MAX31855(object):
@@ -17,37 +17,39 @@ class MAX31855(object):
      - A [Raspberry Pi](http://www.raspberrypi.org/)
 
     '''
-    def __init__(self, cs_pin, clock_pin, data_pin, hw_spi_channel, units = "c", board = GPIO.BCM):
+    def __init__(self, cs_pin, clock_pin, data_pin, hw_spi_channel, units = "c"):
         '''Initialize Soft (Bitbang) SPI bus
 
         Parameters:
-        - cs_pin:    Chip Select (CS) / Slave Select (SS) pin (Any GPIO)  
+        - cs_pin:    Chip Select (CS) / Slave Select (SS) pin (Any GPIO)
         - clock_pin: Clock (SCLK / SCK) pin (Any GPIO)
         - data_pin:  Data input (SO / MOSI) pin (Any GPIO)
         - units:     (optional) unit of measurement to return. ("c" (default) | "k" | "f")
-        - board:     (optional) pin numbering method as per RPi.GPIO library (GPIO.BCM (default) | GPIO.BOARD)
+        - FIXME board:     (optional) pin numbering method as per RPi.GPIO library (GPIO.BCM (default) | GPIO.BOARD)
 
         '''
-        """
-        self.cs_pin = cs_pin
-        self.clock_pin = clock_pin
-        self.data_pin = data_pin
-        self.units = units
-        self.data = None
-        self.board = board
+
+#        self.cs_pin = cs_pin
+#       self.clock_pin = clock_pin
+#        self.data_pin = data_pin
+#        self.units = units
+#        self.data = None
+#        self.board = board
 
         # Initialize needed GPIO
-        GPIO.setmode(self.board)
-        GPIO.setup(self.cs_pin, GPIO.OUT)
-        GPIO.setup(self.clock_pin, GPIO.OUT)
-        GPIO.setup(self.data_pin, GPIO.IN)
+#        GPIO.setmode(self.board)
+#        GPIO.setup(self.cs_pin, GPIO.OUT)
+#        GPIO.setup(self.clock_pin, GPIO.OUT)
+#        GPIO.setup(self.data_pin, GPIO.IN)
 
         # Pull chip select high to make chip inactive
-        GPIO.output(self.cs_pin, GPIO.HIGH)
-        """
-        self.hw_spi = hw_spi_channel
-        
-        if self.hw_spi is None : #bit banging SPI
+#        GPIO.output(self.cs_pin, GPIO.HIGH)
+
+	self.units = units
+        self.data = None
+	self.hw_spi = hw_spi_channel
+
+	if self.hw_spi is None : #bit banging SPI
         	GPIO.bb_spi_open(self.cs_pin, self.data_pin, 31 ,self.clock_pin, 20000, 1)
 
         else : # HW SPI
@@ -66,35 +68,35 @@ class MAX31855(object):
 
     def read(self):
         '''Reads 32 bits of the SPI bus & stores as an integer in self.data.'''
-'''    
-        bytesin = 0
-        # Select the chip
-        GPIO.output(self.cs_pin, GPIO.LOW)
-        # Read in 32 bits
-        for i in range(32):
-            GPIO.output(self.clock_pin, GPIO.LOW)
-            bytesin = bytesin << 1
-            if (GPIO.input(self.data_pin)):
-                bytesin = bytesin | 1
-            GPIO.output(self.clock_pin, GPIO.HIGH)
-        # Unselect the chip
-        GPIO.output(self.cs_pin, GPIO.HIGH)
-        # Save data
-        self.data = bytesin
-'''
-		if self.hw_spi is None :
-			count, data = GPIO.bb_spi_xfer(self.cs_pin, [0, 0, 0, 0]) 
 
-		else :
-			count, data = GPIO.spi_read(self.spi_h, 4)
-        
+#        bytesin = 0
+#        # Select the chip
+#       GPIO.output(self.cs_pin, GPIO.LOW)
+#        # Read in 32 bits
+#        for i in range(32):
+#            GPIO.output(self.clock_pin, GPIO.LOW)
+#            bytesin = bytesin << 1
+#            if (GPIO.input(self.data_pin)):
+#                bytesin = bytesin | 1
+#            GPIO.output(self.clock_pin, GPIO.HIGH)
+#        # Unselect the chip
+#        GPIO.output(self.cs_pin, GPIO.HIGH)
+#        # Save data
+#        self.data = bytesin
+
+	if self.hw_spi is None :
+		count, data = GPIO.bb_spi_xfer(self.cs_pin, [0, 0, 0, 0]) 
+
+	else :
+		count, data = GPIO.spi_read(self.spi_h, 4)
+
         if count == 4:
             self.data = ((data[0])<<24) | ((data[1])<<16) | ((data[2])<<8) | data[3]
 
         else :
         	raise MAX31855Error("data count: "+count)
-            
-            
+
+
     def checkErrors(self, data_32 = None):
         '''Checks error bits to see if there are any SCV, SCG, or OC faults'''
         if data_32 is None:
