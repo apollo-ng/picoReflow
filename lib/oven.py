@@ -34,7 +34,7 @@ try:
 		log.warning(msg)
 		gpio_available = False
 #    	exit(0)
-    else:
+	else:
 		GPIO.set_mode(config.gpio_heat,pigpio.OUTPUT)
     	GPIO.set_mode(config.gpio_cool, pigpio.OUTPUT)
 		GPIO.set_mode(config.gpio_air, pigpio.OUTPUT)
