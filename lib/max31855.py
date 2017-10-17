@@ -20,6 +20,7 @@
 #!/usr/bin/python
 #import RPi.GPIO as GPIO
 import pigpio
+import math
 
 GPIO = pigpio.pi()
 
@@ -112,7 +113,7 @@ class MAX31855(object):
 
         if count == 4:
             self.data = ((data[0])<<24) | ((data[1])<<16) | ((data[2])<<8) | data[3]
-
+#            self.data = ((data[3])<<24) | ((data[2])<<16) | ((data[1])<<8) | data[0]
         else :
         	raise MAX31855Error("data count: " + str(count))
 
@@ -127,20 +128,20 @@ class MAX31855(object):
         shortToVCC = (data_32 & 0x00000004) != 0         # SCV bit, D2
         if anyErrors:
             if noConnection:
-                raise MAX31855Error("No Connection")
+                raise MAX31855Error("No Connection " + format(data_32, '#010X') )
             elif shortToGround:
-                raise MAX31855Error("Thermocouple short to ground")
+                raise MAX31855Error("Thermocouple short to ground " + format(data_32, '#010X') )
             elif shortToVCC:
-                raise MAX31855Error("Thermocouple short to VCC")
+                raise MAX31855Error("Thermocouple short to VCC" + format(data_32, '#010X') )
             else:
                 # Perhaps another SPI device is trying to send data?
                 # Did you remember to initialize all other SPI devices?
-                raise MAX31855Error("Unknown Error")
+                raise MAX31855Error("Unknown Error " + format(data_32, '#010X') )
 
     def data_to_LinearizedTempC(self, data_32 = None):
 #        Return the NIST-linearized thermocouple temperature value in degrees celsius.
 #       See https://learn.adafruit.com/calibrating-sensors/maxim-31855-linearization for more info.
-		if data_32 is None:
+	if data_32 is None:
             data_32 = self.data
 #		extract TC temp
 # 		Check if signed bit is set.
@@ -153,10 +154,10 @@ class MAX31855(object):
             # Positive value, just shift the bits to get the value.
             data_32 >>= 18
         # Scale by 0.25 degrees C per bit and return value.
-        TC_temp =  v * 0.25
-#		Extract Internal Temp
-		data_32 = self.data
-# 		Ignore bottom 4 bits of thermocouple data.
+        TC_temp =  data_32 * 0.25
+#	Extract Internal Temp
+	data_32 = self.data
+# 	Ignore bottom 4 bits of thermocouple data.
         data_32 >>= 4
         # Grab bottom 11 bits as internal temperature data.
         Internal_Temp= data_32 & 0x7FF
@@ -165,7 +166,7 @@ class MAX31855(object):
             # because python is a little odd about handling signed/unsigned.
             Internal_Temp -= 4096
         # Scale by 0.0625 degrees C per bit and return value.
-        Internal_Temp = Internal_Temp * 0.0625		
+        Internal_Temp = Internal_Temp * 0.0625
 
         # MAX31855 thermocouple voltage reading in mV
         thermocoupleVoltage = (TC_temp - Internal_Temp) * 0.041276
@@ -233,7 +234,6 @@ class MAX31855(object):
             b8 * pow(voltageSum, 8.0) +
             b9 * pow(voltageSum, 9.0))
 
-    
     def data_to_tc_temperature(self, data_32 = None):
         '''Takes an integer and returns a thermocouple temperature in celsius.'''
         if data_32 is None:
