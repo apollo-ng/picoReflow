@@ -187,7 +187,7 @@ class MAX31855(object):
         voltageSum = thermocoupleVoltage + coldJunctionVoltage
         # calculate corrected temperature reading based on coefficients for 3 different ranges
         # float b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10;
-        if thermocoupleVoltage < 0:
+        if voltageSum < 0:
             b0 = 0.0000000E+00
             b1 = 2.5173462E+01
             b2 = -1.1662878E+00
@@ -198,7 +198,7 @@ class MAX31855(object):
             b7 = -1.0450598E-02
             b8 = -5.1920577E-04
             b9 = 0.0000000E+00
-        elif thermocoupleVoltage < 20.644:
+        elif voltageSum < 20.644:
             b0 = 0.000000E+00
             b1 = 2.508355E+01
             b2 = 7.860106E-02
@@ -209,7 +209,7 @@ class MAX31855(object):
             b7 = -4.413030E-05
             b8 = 1.057734E-06
             b9 = -1.052755E-08
-        elif thermocoupleVoltage < 54.886:
+        elif voltageSum < 54.886:
             b0 = -1.318058E+02
             b1 = 4.830222E+01
             b2 = -1.646031E+00
