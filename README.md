@@ -1,3 +1,12 @@
+Note: This is a picoReflow fork, intended for a "headless" RPi.
+The following changes were made so far:
+ * Move to pigpio IO library (http://abyz.me.uk/rpi/pigpio/python.html)
+ * Added HW spi interface support (using pigpio)
+ * Added Thermocouple linearization calculations (see: https://learn.adafruit.com/calibrating-sensors/maxim-31855-linearization)
+In addition to teh below instructiuons you need to have the pigpio daemon running in order to use this fork!
+
+From the Source ( https://github.com/apollo-ng/picoReflow ):
+
 picoReflow
 ==========
 
