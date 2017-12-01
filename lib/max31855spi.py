@@ -1,4 +1,6 @@
 #!/usr/bin/python
+import logging
+
 from Adafruit_MAX31855 import MAX31855
 
 class MAX31855SPI(object):
@@ -9,10 +11,12 @@ class MAX31855SPI(object):
     '''
     def __init__(self, spi_dev):
         self.max31855 = MAX31855.MAX31855(spi=spi_dev)
+        self.log = logging.getLogger(__name__)
 
     def get(self):
         '''Reads SPI bus and returns current value of thermocouple.'''
         state = self.max31855.readState()
+        self.log.debug("status %s" % state)
         if state['openCircuit']:
             raise MAX31855Error('Not Connected')
         elif state['shortGND']:

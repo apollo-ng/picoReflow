@@ -18,14 +18,14 @@ try:
         log.info("import MAX31855")
     if config.max31855spi:
         import Adafruit_GPIO.SPI as SPI
-        from max6675 import MAX31855SPI, MAX31855SPIError
+        from max31855spi import MAX31855SPI, MAX31855SPIError
         log.info("import MAX31855SPI")
     if config.max6675:
         from max6675 import MAX6675, MAX6675Error
         log.info("import MAX6675")
     sensor_available = True
 except ImportError:
-    log.warning("Could not initialize temperature sensor, using dummy values!")
+    log.exception("Could not initialize temperature sensor, using dummy values!")
     sensor_available = False
 
 try:
@@ -236,8 +236,8 @@ class TempSensorReal(TempSensor):
         while True:
             try:
                 self.temperature = self.thermocouple.get()
-            except Exception as ex:
-                log.error(ex, "problem reading temp")
+            except Exception:
+                log.exception("problem reading temp")
             time.sleep(self.time_step)
 
 
