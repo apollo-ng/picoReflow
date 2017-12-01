@@ -57,6 +57,10 @@ If you want to deploy the code on a PI for production:
 This **only applies to non-Raspbian installations**, since Raspbian ships
 RPi.GPIO with the default installation.
 
+If you also want to use the in-kernel SPI drivers with a MAX31855 sensor:
+
+    $ sudo pip install Adafruit-MAX31855
+
 ### Clone repo
 
     $ git clone https://github.com/apollo-ng/picoReflow.git
