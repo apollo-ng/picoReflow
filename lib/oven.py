@@ -10,15 +10,19 @@ import config
 log = logging.getLogger(__name__)
 
 try:
-    if (config.max31855 == config.max6675):
-    	log.error("choose (only) one converter IC")
-	exit()
+    if config.max31855 + config.max6675 + config.max31855spi > 1:
+        log.error("choose (only) one converter IC")
+        exit()
     if config.max31855:
-    	from max31855 import MAX31855, MAX31855Error
-    	log.info("import MAX31855")
+        from max31855 import MAX31855, MAX31855Error
+        log.info("import MAX31855")
+    if config.max31855spi:
+        import Adafruit_GPIO.SPI as SPI
+        from max6675 import MAX31855SPI, MAX31855SPIError
+        log.info("import MAX31855SPI")
     if config.max6675:
-   	from max6675 import MAX6675, MAX6675Error
-    	log.info("import MAX6675")
+        from max6675 import MAX6675, MAX6675Error
+        log.info("import MAX6675")
     sensor_available = True
 except ImportError:
     log.warning("Could not initialize temperature sensor, using dummy values!")
@@ -147,14 +151,14 @@ class Oven (threading.Thread):
             self.heat = 1.0
             if gpio_available:
                if config.heater_invert:
-               	 GPIO.output(config.gpio_heat, GPIO.LOW)
+                 GPIO.output(config.gpio_heat, GPIO.LOW)
                else:
                  GPIO.output(config.gpio_heat, GPIO.HIGH)
         else:
             self.heat = 0.0
             if gpio_available:
                if config.heater_invert:
-               	 GPIO.output(config.gpio_heat, GPIO.HIGH)
+                 GPIO.output(config.gpio_heat, GPIO.HIGH)
                else:
                  GPIO.output(config.gpio_heat, GPIO.LOW)
 
@@ -211,18 +215,22 @@ class TempSensorReal(TempSensor):
     def __init__(self, time_step):
         TempSensor.__init__(self, time_step)
         if config.max6675:
-        	log.info("init MAX6675")
-        	self.thermocouple = MAX6675(config.gpio_sensor_cs,
+            log.info("init MAX6675")
+            self.thermocouple = MAX6675(config.gpio_sensor_cs,
                                      config.gpio_sensor_clock,
                                      config.gpio_sensor_data,
                                      config.temp_scale)
 
         if config.max31855:
-        	log.info("init MAX31855")
-        	self.thermocouple = MAX31855(config.gpio_sensor_cs,
+            log.info("init MAX31855")
+            self.thermocouple = MAX31855(config.gpio_sensor_cs,
                                      config.gpio_sensor_clock,
                                      config.gpio_sensor_data,
                                      config.temp_scale)
+
+        if config.max31855spi:
+            log.info("init MAX31855-spi")
+            self.thermocouple = MAX31855SPI(spi_dev=SPI.SpiDev(port=0, device=config.spi_sensor_chip_id))
 
     def run(self):
         while True:
