@@ -48,7 +48,7 @@ class Oven (threading.Thread):
     STATE_IDLE = "IDLE"
     STATE_RUNNING = "RUNNING"
 
-    def __init__(self, simulate=False, time_step=0.5):
+    def __init__(self, simulate=False, time_step=config.sensor_time_wait):
         threading.Thread.__init__(self)
         self.daemon = True
         self.simulate = simulate
