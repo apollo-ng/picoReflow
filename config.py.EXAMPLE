@@ -35,14 +35,24 @@ heater_invert = 0 # switches the polarity of the heater control
 ### Inputs
 gpio_door = 18
 
-### Thermocouple Adapter selection (MAX31855 or MAX6675)
+### Thermocouple Adapter selection:
+#   max31855 - bitbang SPI interface
+#   max31855spi - kernel SPI interface
+#   max6675 - bitbang SPI interface
 max31855 = 1
 max6675 = 0
+max31855spi = 0 # if you use this one, you MUST reassign the default GPIO pins
 
-### Thermocouple I2C Connection
+### Thermocouple Connection (using bitbang interfaces)
 gpio_sensor_cs = 27
 gpio_sensor_clock = 22
 gpio_sensor_data = 17
+
+### Thermocouple SPI Connection (using adafrut drivers + kernel SPI interface)
+spi_sensor_chip_id = 0
+
+### amount of time, in seconds, to wait between reads of the thermocouple
+sensor_time_wait = .5
 
 
 ########################################################################
