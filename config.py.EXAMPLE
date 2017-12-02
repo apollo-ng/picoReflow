@@ -41,7 +41,7 @@ gpio_door = 18
 #   max6675 - bitbang SPI interface
 max31855 = 1
 max6675 = 0
-max31855spi = 0
+max31855spi = 0 # if you use this one, you MUST reassign the default GPIO pins
 
 ### Thermocouple Connection (using bitbang interfaces)
 gpio_sensor_cs = 27
