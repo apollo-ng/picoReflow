@@ -101,6 +101,7 @@ class Oven (threading.Thread):
     def run(self):
         temperature_count = 0
         last_temp = 0
+        pid = 0
         while True:
             self.door = self.get_door_state()
 
@@ -133,7 +134,7 @@ class Oven (threading.Thread):
                 else:
                     temperature_count = 0
                 
-                self.set_heat(pid > 0)
+                self.set_heat(pid)
                 
                 #if self.profile.is_rising(self.runtime):
                 #    self.set_cool(False)
@@ -152,17 +153,23 @@ class Oven (threading.Thread):
 
             #Capture the last temperature value
             last_temp = self.temp_sensor.temperature
-
-            time.sleep(self.time_step)
+            if pid > 0:
+                time.sleep(self.time_step * (1 - pid))
+            else:
+                time.sleep(self.time_step)
 
     def set_heat(self, value):
-        if value:
+        if value > 0:
             self.heat = 1.0
             if gpio_available:
                if config.heater_invert:
                  GPIO.output(config.gpio_heat, GPIO.LOW)
+                 time.sleep(self.time_step * value)
+                 GPIO.output(config.gpio_heat, GPIO.HIGH)   
                else:
                  GPIO.output(config.gpio_heat, GPIO.HIGH)
+                 time.sleep(self.time_step * value)
+                 GPIO.output(config.gpio_heat, GPIO.LOW)   
         else:
             self.heat = 0.0
             if gpio_available:
