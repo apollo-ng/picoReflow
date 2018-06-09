@@ -133,6 +133,9 @@ class Oven (threading.Thread):
                         self.reset()
                 else:
                     temperature_count = 0
+                    
+                #Capture the last temperature value.  This must be done before set_heat, since there is a sleep in there now.
+                last_temp = self.temp_sensor.temperature
                 
                 self.set_heat(pid)
                 
@@ -151,8 +154,7 @@ class Oven (threading.Thread):
                 if self.runtime >= self.totaltime:
                     self.reset()
 
-            #Capture the last temperature value
-            last_temp = self.temp_sensor.temperature
+            
             if pid > 0:
                 time.sleep(self.time_step * (1 - pid))
             else:
