@@ -17,7 +17,7 @@ Don't forget to share and drop a link, when you do :)
 
 ## Hardware
 
-  * Raspberry Pi (Rev 2B)
+  * Raspberry Pi (Rev 2B, Zero W)
   * MAX 31855/6675 Cold-Junction K-Type Thermocouple
   * GPIO driven Solid-State-Relays/MOSFETs
 
@@ -40,7 +40,8 @@ successfully on any other OS, please update this:
 
     $ sudo apt-get install python-pip python-dev libevent-dev
     $ sudo pip install ez-setup
-    $ sudo pip install greenlet bottle gevent gevent-websocket
+    $ sudo apt-get install python-gevent
+    $ sudo pip install greenlet bottle gevent-websocket
 
 #### Gentoo
 
