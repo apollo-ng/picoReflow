@@ -77,7 +77,7 @@ All parameters are defined in config.py, just copy the example and review/change
 
 ### Server Startup
 
-    $ ./picoReflowd.py
+    $ ./picoreflowd.py
 
 ### Autostart Server onBoot
 If you want the server to autostart on boot, run the following commands
@@ -88,8 +88,8 @@ If you want the server to autostart on boot, run the following commands
 
 ### Client Access
 
-Open Browser and goto http://127.0.0.1:8080 (for local development) or the IP
-of your PI and the port defined in config.py (default 8080).
+Open Browser and goto http://127.0.0.1:8081 (for local development) or the IP
+of your PI and the port defined in config.py (default 8081).
 
 ## License
 
