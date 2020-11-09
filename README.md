@@ -40,8 +40,8 @@ successfully on any other OS, please update this:
 
     $ sudo apt-get install python-pip python-dev libevent-dev
     $ sudo pip install ez-setup
-    $ sudo apt-get install python-gevent
-    $ sudo pip install greenlet bottle gevent-websocket
+    $ sudo apt-get install python-gevent python-gevent-websocket
+    $ sudo pip install greenlet bottle
 
 #### Gentoo
 
