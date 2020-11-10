@@ -17,7 +17,7 @@ Don't forget to share and drop a link, when you do :)
 
 ## Hardware
 
-  * Raspberry Pi (Rev 2B)
+  * Raspberry Pi (Rev 2B, Zero W)
   * MAX 31855/6675 Cold-Junction K-Type Thermocouple
   * GPIO driven Solid-State-Relays/MOSFETs
 
@@ -36,11 +36,18 @@ successfully on any other OS, please update this:
   * gevent-1.0
   * gevent-websocket-0.9.3
 
-#### Ubuntu/Raspbian
+#### Ubuntu
 
     $ sudo apt-get install python-pip python-dev libevent-dev
     $ sudo pip install ez-setup
     $ sudo pip install greenlet bottle gevent gevent-websocket
+
+#### Raspbian
+
+    $ sudo apt-get install python-pip python-dev libevent-dev
+    $ sudo pip install ez-setup
+    $ sudo apt-get install python-gevent python-gevent-websocket
+    $ sudo pip install greenlet bottle
 
 #### Gentoo
 
@@ -76,7 +83,7 @@ All parameters are defined in config.py, just copy the example and review/change
 
 ### Server Startup
 
-    $ ./picoReflowd.py
+    $ ./picoreflowd.py
 
 ### Autostart Server onBoot
 If you want the server to autostart on boot, run the following commands
@@ -87,8 +94,8 @@ If you want the server to autostart on boot, run the following commands
 
 ### Client Access
 
-Open Browser and goto http://127.0.0.1:8080 (for local development) or the IP
-of your PI and the port defined in config.py (default 8080).
+Open Browser and goto http://127.0.0.1:8081 (for local development) or the IP
+of your PI and the port defined in config.py (default 8081).
 
 ## License
 
