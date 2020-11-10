@@ -36,7 +36,13 @@ successfully on any other OS, please update this:
   * gevent-1.0
   * gevent-websocket-0.9.3
 
-#### Ubuntu/Raspbian
+#### Ubuntu
+
+    $ sudo apt-get install python-pip python-dev libevent-dev
+    $ sudo pip install ez-setup
+    $ sudo pip install greenlet bottle gevent gevent-websocket
+
+#### Raspbian
 
     $ sudo apt-get install python-pip python-dev libevent-dev
     $ sudo pip install ez-setup
