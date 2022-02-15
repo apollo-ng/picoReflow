@@ -38,16 +38,16 @@ successfully on any other OS, please update this:
 
 #### Ubuntu
 
-    $ sudo apt-get install python-pip python-dev libevent-dev
-    $ sudo pip install ez-setup
-    $ sudo pip install greenlet bottle gevent gevent-websocket
+    $ sudo apt-get install python3-pip python-dev libevent-dev
+    $ sudo pip3 install ez-setup
+    $ sudo pip3 install greenlet bottle gevent gevent-websocket
 
 #### Raspbian
 
-    $ sudo apt-get install python-pip python-dev libevent-dev
-    $ sudo pip install ez-setup
+    $ sudo apt-get install python3-pip python-dev libevent-dev
+    $ sudo pip3 install ez-setup
     $ sudo apt-get install python-gevent python-gevent-websocket
-    $ sudo pip install greenlet bottle
+    $ sudo pip3 install greenlet bottle
 
 #### Gentoo
 
@@ -59,14 +59,14 @@ successfully on any other OS, please update this:
 
 If you want to deploy the code on a PI for production:
 
-    $ pip install RPi.GPIO
+    $ pip3 install RPi.GPIO
 
 This **only applies to non-Raspbian installations**, since Raspbian ships
 RPi.GPIO with the default installation.
 
 If you also want to use the in-kernel SPI drivers with a MAX31855 sensor:
 
-    $ sudo pip install Adafruit-MAX31855
+    $ sudo pip3 install Adafruit-MAX31855
 
 ### Clone repo
 
@@ -83,7 +83,7 @@ All parameters are defined in config.py, just copy the example and review/change
 
 ### Server Startup
 
-    $ ./picoreflowd.py
+    $ python3 picoreflowd.py
 
 ### Autostart Server onBoot
 If you want the server to autostart on boot, run the following commands
