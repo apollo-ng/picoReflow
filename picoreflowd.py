@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/python
 
 import os
 import sys
@@ -16,8 +16,8 @@ try:
     import config
     sys.dont_write_bytecode = False
 except:
-    print "Could not import config file."
-    print "Copy config.py.EXAMPLE to config.py and adapt it for your setup."
+    print("Could not import config file.")
+    print("Copy config.py.EXAMPLE to config.py and adapt it for your setup.")
     exit(1)
 
 logging.basicConfig(level=config.log_level, format=config.log_format)
