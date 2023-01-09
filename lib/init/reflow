@@ -17,7 +17,7 @@ export HOME
 case "$1" in
     start)
         echo "Starting Reflow Server"
-        /home/pi/picoReflow/picoreflowd.py  2>&1 &
+        python3 /home/pi/picoReflow/picoreflowd.py  2>&1 &
     ;;
     stop)
         echo "Stopping Reflow Server"
